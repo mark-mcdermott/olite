@@ -33,10 +33,18 @@ export interface ElectronAPI {
     >;
   };
 
-  // Tag operations (to be implemented)
+  // Tag operations
   tags: {
-    extractTags: (content: string) => Promise<string[]>;
-    getTaggedContent: (tag: string) => Promise<Array<{ date: string; content: string }>>;
+    buildIndex: () => Promise<VaultResponse>;
+    getAllTags: () => Promise<VaultResponse<{ tags: string[] }>>;
+    getContent: (tag: string) => Promise<
+      VaultResponse<{ content: Array<{ date: string; filePath: string; content: string }> }>
+    >;
+    extract: (content: string) => Promise<VaultResponse<{ tags: string[] }>>;
+    getStats: (tag: string) => Promise<VaultResponse<{ count: number; lastUpdated: number }>>;
+    deleteContent: (tag: string) => Promise<
+      VaultResponse<{ filesModified: string[]; sectionsDeleted: number }>
+    >;
   };
 
   // Publishing operations (to be implemented)
@@ -64,8 +72,12 @@ const api: ElectronAPI = {
   },
 
   tags: {
-    extractTags: (content: string) => ipcRenderer.invoke('tags:extract', content),
-    getTaggedContent: (tag: string) => ipcRenderer.invoke('tags:get-content', tag)
+    buildIndex: () => ipcRenderer.invoke('tags:build-index'),
+    getAllTags: () => ipcRenderer.invoke('tags:get-all'),
+    getContent: (tag: string) => ipcRenderer.invoke('tags:get-content', tag),
+    extract: (content: string) => ipcRenderer.invoke('tags:extract', content),
+    getStats: (tag: string) => ipcRenderer.invoke('tags:get-stats', tag),
+    deleteContent: (tag: string) => ipcRenderer.invoke('tags:delete-content', tag)
   },
 
   publish: {

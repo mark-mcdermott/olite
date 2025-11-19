@@ -2,7 +2,9 @@ import { app, BrowserWindow } from 'electron';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { registerVaultHandlers } from './ipc/vaultHandlers';
+import { registerTagHandlers, setTagManager } from './ipc/tagHandlers';
 import { vaultManager } from './vault/VaultManager';
+import { TagManager } from './vault/TagManager';
 
 // ES modules equivalent of __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -39,8 +41,13 @@ const createWindow = (): void => {
   });
 };
 
+// Create tag manager
+const tagManager = new TagManager(vaultManager);
+
 // Register IPC handlers
 registerVaultHandlers();
+registerTagHandlers();
+setTagManager(tagManager);
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows
@@ -49,6 +56,10 @@ app.whenReady().then(async () => {
   try {
     await vaultManager.initialize();
     console.log('Vault initialized at:', vaultManager.getVaultPath());
+
+    // Build tag index
+    await tagManager.buildIndex();
+    console.log('Tag index built, tags:', tagManager.getAllTags());
   } catch (error) {
     console.error('Failed to initialize vault:', error);
   }
