@@ -6,6 +6,7 @@ import { MarkdownEditor } from './components/MarkdownEditor';
 import { TagBrowser } from './components/TagBrowser';
 import { TagView } from './components/TagView';
 import { DailyNotesNav } from './components/DailyNotesNav';
+import { CommandPalette } from './components/CommandPalette';
 
 type SidebarTab = 'files' | 'tags' | 'daily';
 type ViewMode = 'editor' | 'tag-view';
@@ -20,6 +21,7 @@ const App: React.FC = () => {
   const [fileContent, setFileContent] = useState<string>('');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [dailyNoteDates, setDailyNoteDates] = useState<string[]>([]);
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
 
   // Load today's note on mount
   useEffect(() => {
@@ -53,6 +55,20 @@ const App: React.FC = () => {
       loadDates();
     }
   }, [vaultPath, getDailyNoteDates]);
+
+  // Global keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Cmd+P or Ctrl+P to open command palette
+      if ((e.metaKey || e.ctrlKey) && e.key === 'p') {
+        e.preventDefault();
+        setCommandPaletteOpen(true);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const handleFileClick = async (path: string) => {
     try {
@@ -102,6 +118,30 @@ const App: React.FC = () => {
     }
   };
 
+  const handleCommandPaletteFileSelect = async (path: string) => {
+    await handleFileClick(path);
+  };
+
+  const handleCommandPaletteTagSelect = (tag: string) => {
+    setSidebarTab('tags');
+    handleTagClick(tag);
+  };
+
+  const handleCommandPaletteDateSelect = async (date: string) => {
+    setSidebarTab('daily');
+    await handleDateSelect(date);
+  };
+
+  const handleCreateFile = () => {
+    // TODO: Implement file creation dialog
+    alert('File creation UI coming soon!');
+  };
+
+  const handleCreateFolder = () => {
+    // TODO: Implement folder creation dialog
+    alert('Folder creation UI coming soon!');
+  };
+
   if (loading && !fileTree) {
     return (
       <div className="h-screen w-screen flex items-center justify-center bg-gray-100">
@@ -126,6 +166,19 @@ const App: React.FC = () => {
 
   return (
     <div className="h-screen w-screen flex flex-col bg-gray-50">
+      {/* Command Palette */}
+      <CommandPalette
+        isOpen={commandPaletteOpen}
+        onClose={() => setCommandPaletteOpen(false)}
+        fileTree={fileTree}
+        tags={tags}
+        onFileSelect={handleCommandPaletteFileSelect}
+        onTagSelect={handleCommandPaletteTagSelect}
+        onDateSelect={handleCommandPaletteDateSelect}
+        onCreateFile={handleCreateFile}
+        onCreateFolder={handleCreateFolder}
+      />
+
       {/* Header */}
       <div className="h-12 bg-white border-b border-gray-200 flex items-center px-4">
         <h1 className="text-lg font-semibold text-gray-800">Olite</h1>
