@@ -13,12 +13,14 @@ interface TaggedContent {
 interface TagViewProps {
   tag: string;
   getContent: (tag: string) => Promise<TaggedContent[]>;
+  onDeleteTag?: (tag: string) => Promise<void>;
 }
 
-export const TagView: React.FC<TagViewProps> = ({ tag, getContent }) => {
+export const TagView: React.FC<TagViewProps> = ({ tag, getContent, onDeleteTag }) => {
   const [content, setContent] = useState<TaggedContent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     const loadContent = async () => {
@@ -68,11 +70,73 @@ export const TagView: React.FC<TagViewProps> = ({ tag, getContent }) => {
     <div className="h-full overflow-auto">
       {/* Header */}
       <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 z-10">
-        <h1 className="text-2xl font-bold text-gray-800">{tag}</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          {content.length} {content.length === 1 ? 'entry' : 'entries'}
-        </p>
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800">{tag}</h1>
+            <p className="text-sm text-gray-500 mt-1">
+              {content.length} {content.length === 1 ? 'entry' : 'entries'}
+            </p>
+          </div>
+          <div className="flex gap-2">
+            {onDeleteTag && (
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
+                title="Delete all content with this tag"
+              >
+                <span>🗑️</span>
+                <span>Delete Tag</span>
+              </button>
+            )}
+            <button
+              onClick={() => alert('Publishing feature coming soon!\n\nThis will publish all content tagged with ' + tag + ' to your configured blog.')}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+            >
+              <span>📤</span>
+              <span>Publish to Blog</span>
+            </button>
+          </div>
+        </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h2 className="text-xl font-bold text-gray-900 mb-2">Delete Tag Content?</h2>
+            <p className="text-gray-600 mb-4">
+              This will permanently delete all content tagged with <strong>{tag}</strong> from your notes.
+              This action cannot be undone.
+            </p>
+            <p className="text-sm text-gray-500 mb-6">
+              {content.length} {content.length === 1 ? 'section' : 'sections'} will be removed from your files.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  try {
+                    if (onDeleteTag) {
+                      await onDeleteTag(tag);
+                      setShowDeleteConfirm(false);
+                    }
+                  } catch (err: any) {
+                    alert(`Failed to delete tag: ${err.message}`);
+                  }
+                }}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Delete {content.length} {content.length === 1 ? 'Section' : 'Sections'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Content sections */}
       <div className="p-6 space-y-8">

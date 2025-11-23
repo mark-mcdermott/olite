@@ -7,13 +7,14 @@ import { TagBrowser } from './components/TagBrowser';
 import { TagView } from './components/TagView';
 import { DailyNotesNav } from './components/DailyNotesNav';
 import { CommandPalette } from './components/CommandPalette';
+import { Breadcrumb } from './components/Breadcrumb';
 
 type SidebarTab = 'files' | 'tags' | 'daily';
 type ViewMode = 'editor' | 'tag-view';
 
 const App: React.FC = () => {
-  const { vaultPath, fileTree, loading, error, readFile, writeFile, getTodayNote, getDailyNote, getDailyNoteDates } = useVault();
-  const { tags, loading: tagsLoading, getTagContent } = useTags();
+  const { vaultPath, fileTree, loading, error, readFile, writeFile, getTodayNote, getDailyNote, getDailyNoteDates, refreshFileTree } = useVault();
+  const { tags, loading: tagsLoading, getTagContent, deleteTag, refreshTags } = useTags();
 
   const [sidebarTab, setSidebarTab] = useState<SidebarTab>('files');
   const [viewMode, setViewMode] = useState<ViewMode>('editor');
@@ -142,6 +143,23 @@ const App: React.FC = () => {
     alert('Folder creation UI coming soon!');
   };
 
+  const handleDeleteTag = async (tag: string) => {
+    try {
+      const result = await deleteTag(tag);
+      alert(`Successfully deleted tag ${tag}!\n\n${result.filesModified.length} files modified\n${result.sectionsDeleted} sections removed`);
+
+      // Refresh file tree and tags
+      await refreshFileTree();
+      await refreshTags();
+
+      // Return to tags view
+      setSelectedTag(null);
+      setViewMode('editor');
+    } catch (err: any) {
+      throw err; // Re-throw to be handled by TagView
+    }
+  };
+
   if (loading && !fileTree) {
     return (
       <div className="h-screen w-screen flex items-center justify-center bg-gray-100">
@@ -247,9 +265,9 @@ const App: React.FC = () => {
         <div className="flex-1 flex flex-col">
           {viewMode === 'editor' && selectedFile ? (
             <>
-              {/* File header */}
-              <div className="h-12 bg-white border-b border-gray-200 flex items-center px-4">
-                <span className="text-sm font-medium text-gray-700">{selectedFile}</span>
+              {/* File header with breadcrumb */}
+              <div className="h-12 bg-white border-b border-gray-200 flex items-center px-4 gap-3">
+                <Breadcrumb path={selectedFile} />
               </div>
 
               {/* Markdown Editor */}
@@ -263,14 +281,14 @@ const App: React.FC = () => {
               </div>
             </>
           ) : viewMode === 'tag-view' && selectedTag ? (
-            <TagView tag={selectedTag} getContent={getTagContent} />
+            <TagView tag={selectedTag} getContent={getTagContent} onDeleteTag={handleDeleteTag} />
           ) : (
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center text-gray-500">
                 <div className="text-4xl mb-4">📝</div>
                 <p>Select a file to view its contents</p>
                 <p className="text-sm mt-2">or</p>
-                <p className="text-sm">Click the Tags tab to browse tags</p>
+                <p className="text-sm">Press Cmd+P to open the command palette</p>
               </div>
             </div>
           )}
