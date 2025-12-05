@@ -2,24 +2,149 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Theme colors - Light mode (default) - Obsidian-style */
+:root {
+  --color-bg: #ffffff;
+  --color-bg-secondary: #fafafa;
+  --color-bg-tertiary: #f5f5f5;
+  --color-surface: #f5f5f5;
+  --color-border: #e0e0e0;
+  --color-border-light: #e0e0e0;
+  --color-text: #1a1a1a;
+  --color-text-secondary: #5c5c5c;
+  --color-text-muted: #999999;
+  --color-hover: #f5f5f5;
+  --color-active: #ebebeb;
+}
+
+/* Theme colors - Dark mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #1e1e1e;
+    --color-bg-secondary: #1e1e1e;
+    --color-bg-tertiary: #252526;
+    --color-surface: #2d2d2d;
+    --color-border: #333333;
+    --color-border-light: #404040;
+    --color-text: #dcddde;
+    --color-text-secondary: #a0a0a0;
+    --color-text-muted: #666666;
+    --color-hover: #2a2a2a;
+    --color-active: #333333;
+  }
+}
+
 /* Custom styles */
 body {
   margin: 0;
   padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', 'Roboto',
+    'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: var(--color-bg);
+  color: var(--color-text);
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  font-family: 'JetBrains Mono', 'Fira Code', source-code-pro, Menlo, Monaco,
+    Consolas, 'Courier New', monospace;
 }
 
 #root {
   width: 100%;
   height: 100vh;
   overflow: hidden;
+}
+
+/* Custom scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-light);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+/* Selection styling */
+::selection {
+  background-color: rgba(20, 184, 166, 0.3);
+  color: var(--color-text);
+}
+
+/* Focus ring styling - only for keyboard navigation */
+*:focus-visible {
+  outline: 2px solid #14b8a6;
+  outline-offset: 2px;
+}
+
+/* Smooth transitions for interactive elements */
+button, a {
+  transition: all 0.15s ease;
+}
+
+/* Reset default button styles */
+button {
+  border: none;
+  cursor: pointer;
+}
+
+/* Remove default button background but allow Tailwind to override */
+button:not([class*="bg-"]) {
+  background: transparent;
+}
+
+/* Form inputs in dialogs/modals */
+input[type="text"],
+input[type="password"],
+select {
+  background-color: var(--color-surface) !important;
+  color: var(--color-text) !important;
+  border-color: var(--color-border);
+}
+
+input::placeholder {
+  color: var(--color-text-muted) !important;
+}
+
+/* Main editor textarea */
+textarea {
+  background-color: var(--color-bg) !important;
+  color: var(--color-text) !important;
+  caret-color: #14b8a6;
+}
+
+textarea::placeholder {
+  color: var(--color-text-muted) !important;
+}
+
+/* Remove focus outline, use border instead */
+input:focus, select:focus, textarea:focus {
+  outline: none;
+}
+
+/* Force sidebar border colors */
+.sidebar-border {
+  border-right: 1px solid #e0e0e0 !important;
+}
+
+/* Hide scrollbar in sidebar but keep functionality */
+.sidebar-content::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
+
+/* Override any default border colors */
+* {
+  border-color: #e0e0e0;
 }

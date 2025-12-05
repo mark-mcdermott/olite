@@ -1,4 +1,24 @@
 import React, { useState, useEffect } from 'react';
+import {
+  Calendar,
+  Settings,
+  FileText,
+  Code,
+  ChevronUp,
+  ChevronDown,
+  HelpCircle,
+  FilePlus,
+  FolderPlus,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  MoreHorizontal,
+  Pencil,
+  Link,
+  PanelLeftClose,
+  Columns,
+  BookOpen
+} from 'lucide-react';
 import { useVault } from './hooks/useVault';
 import { useTags } from './hooks/useTags';
 import { FileTree } from './components/FileTree';
@@ -180,10 +200,10 @@ const App: React.FC = () => {
 
   if (loading && !fileTree) {
     return (
-      <div className="h-screen w-screen flex items-center justify-center bg-gray-100">
+      <div className="h-screen w-screen flex items-center justify-center bg-obsidian-bg">
         <div className="text-center">
-          <div className="text-2xl mb-2">⏳</div>
-          <p className="text-gray-600">Loading vault...</p>
+          <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+          <p className="text-obsidian-text-secondary">Loading vault...</p>
         </div>
       </div>
     );
@@ -191,17 +211,43 @@ const App: React.FC = () => {
 
   if (error) {
     return (
-      <div className="h-screen w-screen flex items-center justify-center bg-gray-100">
+      <div className="h-screen w-screen flex items-center justify-center bg-obsidian-bg">
         <div className="text-center">
-          <div className="text-2xl mb-2">❌</div>
-          <p className="text-red-600">Error: {error}</p>
+          <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center mx-auto mb-3">
+            <span className="text-red-400 text-xl">!</span>
+          </div>
+          <p className="text-red-400">Error: {error}</p>
         </div>
       </div>
     );
   }
 
+  // Get filename from path for tab display
+  const getFileName = (path: string | null) => {
+    if (!path) return '';
+    const parts = path.split('/');
+    return parts[parts.length - 1].replace('.md', '');
+  };
+
+  // Calculate word and character count
+  const getWordCount = (text: string) => {
+    const words = text.trim().split(/\s+/).filter(w => w.length > 0);
+    return words.length;
+  };
+
+  const getCharCount = (text: string) => {
+    return text.length;
+  };
+
+  // Get vault name from path
+  const getVaultName = () => {
+    if (!vaultPath) return 'vault';
+    const parts = vaultPath.split('/');
+    return parts[parts.length - 1];
+  };
+
   return (
-    <div className="h-screen w-screen flex flex-col bg-gray-50">
+    <div className="h-screen w-screen flex flex-col bg-obsidian-bg">
       {/* Command Palette */}
       <CommandPalette
         isOpen={commandPaletteOpen}
@@ -228,65 +274,67 @@ const App: React.FC = () => {
 
       {/* Settings Dialog */}
       {settingsOpen && (
-        <PublishSettings onClose={() => setSettingsOpen(false)} />
+        <PublishSettings onClose={() => setSettingsOpen(false)} vaultPath={vaultPath} />
       )}
 
-      {/* Header */}
-      <div className="h-12 bg-white border-b border-gray-200 flex items-center justify-between px-4" style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}>
-        <div className="flex items-center">
-          <h1 className="text-lg font-semibold text-gray-800">Olite</h1>
-          {vaultPath && <span className="ml-4 text-xs text-gray-500">{vaultPath}</span>}
+      {/* Top bar - spans full width */}
+      <div className="h-[45px] flex items-center" style={{ backgroundColor: '#f6f6f6', borderBottom: '1px solid #e0e0e0' }}>
+        {/* Left section - same width as both sidebars (44px + 1px border + 260px = 305px) */}
+        <div className="w-[305px] h-full flex items-center" style={{ borderRight: '1px solid #e0e0e0' }}>
+          {/* macOS traffic light space */}
+          <div className="w-[70px] h-full" style={{ WebkitAppRegion: 'drag' } as React.CSSProperties} />
+
+          {/* Collapse sidebar button */}
+          <div className="flex items-center justify-end h-full flex-1">
+            <button className="h-full px-3 hover:bg-[#e8e8e8] transition-colors" style={{ color: '#737373', backgroundColor: 'transparent' }} title="Collapse sidebar">
+              <PanelLeftClose size={20} strokeWidth={1.5} />
+            </button>
+          </div>
         </div>
-        <button
-          onClick={() => setSettingsOpen(true)}
-          className="px-3 py-1 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded"
-          title="Settings (Cmd+,)"
-          style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
-        >
-          ⚙️ Settings
-        </button>
+
+        {/* Spacer with drag region */}
+        <div className="flex-1 h-full" style={{ WebkitAppRegion: 'drag' } as React.CSSProperties} />
+
+        {/* Right side controls */}
+        <div className="flex items-center pr-3 gap-1" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
+          <button className="p-1 hover:bg-[#e8e8e8] rounded" style={{ color: '#737373' }}>
+            <ChevronDown size={16} strokeWidth={1.5} />
+          </button>
+        </div>
       </div>
 
-      {/* Main content */}
+      {/* Main area below top bar */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Sidebar */}
-        <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
-          {/* Sidebar tabs */}
-          <div className="flex border-b border-gray-200">
-            <button
-              onClick={() => setSidebarTab('daily')}
-              className={`flex-1 px-3 py-2 text-sm font-medium transition-colors ${
-                sidebarTab === 'daily'
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-600 hover:text-gray-800'
-              }`}
-            >
-              Daily
-            </button>
-            <button
-              onClick={() => setSidebarTab('files')}
-              className={`flex-1 px-3 py-2 text-sm font-medium transition-colors ${
-                sidebarTab === 'files'
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-600 hover:text-gray-800'
-              }`}
-            >
-              Files
-            </button>
-            <button
-              onClick={() => setSidebarTab('tags')}
-              className={`flex-1 px-3 py-2 text-sm font-medium transition-colors ${
-                sidebarTab === 'tags'
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-600 hover:text-gray-800'
-              }`}
-            >
-              Tags
-            </button>
+        {/* Far-left Icon Sidebar */}
+        <div className="w-[44px] min-w-[44px] flex-shrink-0 flex flex-col items-center gap-2" style={{ backgroundColor: '#f6f6f6', borderRight: '1px solid #e0e0e0', paddingTop: '32px' }}>
+          {/* Top icons */}
+          <button className="p-2 hover:bg-[#e8e8e8] rounded transition-colors" style={{ color: '#737373', backgroundColor: 'transparent' }} title="Calendar" onClick={() => setSidebarTab('daily')}>
+            <Calendar size={20} strokeWidth={1.5} />
+          </button>
+          <button className="p-2 hover:bg-[#e8e8e8] rounded transition-colors" style={{ color: '#737373', backgroundColor: 'transparent' }} title="Files" onClick={() => setSidebarTab('files')}>
+            <FileText size={20} strokeWidth={1.5} />
+          </button>
+          <button className="p-2 hover:bg-[#e8e8e8] rounded transition-colors" style={{ color: '#737373', backgroundColor: 'transparent' }} title="Tags" onClick={() => setSidebarTab('tags')}>
+            <Code size={20} strokeWidth={1.5} />
+          </button>
+        </div>
+
+        {/* Left Sidebar - File tree with toolbar */}
+        <div className="w-[260px] flex flex-col" style={{ backgroundColor: '#f6f6f6', borderRight: '1px solid #e0e0e0', paddingTop: '16px' }}>
+          {/* Sidebar toolbar */}
+          <div className="h-9 flex items-center justify-center" style={{ backgroundColor: 'transparent', marginBottom: '16px' }}>
+            <div className="flex items-center gap-0.5">
+              <button className="p-1.5 hover:bg-[#e8e8e8] rounded transition-colors" style={{ color: '#737373', backgroundColor: 'transparent' }} title="New note" onClick={handleCreateFile}>
+                <FilePlus size={20} strokeWidth={1.5} />
+              </button>
+              <button className="p-1.5 hover:bg-[#e8e8e8] rounded transition-colors" style={{ color: '#737373', backgroundColor: 'transparent' }} title="New folder" onClick={handleCreateFolder}>
+                <FolderPlus size={20} strokeWidth={1.5} />
+              </button>
+            </div>
           </div>
 
           {/* Sidebar content */}
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 overflow-y-auto" style={{ paddingLeft: '13px' }}>
             {sidebarTab === 'daily' ? (
               <DailyNotesNav
                 onDateSelect={handleDateSelect}
@@ -303,44 +351,95 @@ const App: React.FC = () => {
               />
             )}
           </div>
+
+          {/* Bottom vault selector and settings - all on one row */}
+          <div className="px-2 py-5 flex items-center justify-between">
+            <button className="flex items-center px-2 py-1.5 hover:bg-[#e8e8e8] rounded text-xs" style={{ color: '#737373', backgroundColor: 'transparent' }}>
+              <div className="flex flex-col items-center mr-1">
+                <ChevronUp size={10} strokeWidth={2} className="mb-[-4px]" />
+                <ChevronDown size={10} strokeWidth={2} />
+              </div>
+              <span className="truncate text-left">{getVaultName()}</span>
+            </button>
+            <div className="flex items-center gap-1">
+              <button className="p-1.5 hover:bg-[#e8e8e8] rounded transition-colors" style={{ color: '#737373', backgroundColor: 'transparent' }} title="Help">
+                <HelpCircle size={16} strokeWidth={1.5} />
+              </button>
+              <button className="p-1.5 hover:bg-[#e8e8e8] rounded transition-colors" style={{ color: '#737373', backgroundColor: 'transparent' }} title="Settings" onClick={() => setSettingsOpen(true)}>
+                <Settings size={16} strokeWidth={1.5} />
+              </button>
+            </div>
+          </div>
         </div>
 
-        {/* Content area */}
-        <div className="flex-1 flex flex-col">
-          {viewMode === 'editor' && selectedFile ? (
-            <>
-              {/* File header with breadcrumb */}
-              <div className="h-12 bg-white border-b border-gray-200 flex items-center px-4 gap-3">
-                <Breadcrumb path={selectedFile} />
-              </div>
+        {/* Main content area */}
+        <div className="flex-1 flex flex-col bg-white">
 
-              {/* Markdown Editor */}
-              <div className="flex-1 overflow-hidden">
-                <MarkdownEditor
-                  key={selectedFile}
-                  initialContent={fileContent}
-                  filePath={selectedFile}
-                  onSave={handleSave}
-                />
+        {viewMode === 'editor' && selectedFile ? (
+          <>
+            {/* Navigation bar with breadcrumb */}
+            <div className="h-9 flex items-center justify-between px-3" style={{ borderBottom: '1px solid #e0e0e0' }}>
+              <div className="flex items-center gap-2">
+                <button className="p-1 hover:bg-[#e8e8e8] rounded transition-colors" style={{ color: '#737373' }} title="Back">
+                  <ChevronLeft size={18} strokeWidth={1.5} />
+                </button>
+                <button className="p-1 hover:bg-[#e8e8e8] rounded transition-colors" style={{ color: '#737373' }} title="Forward">
+                  <ChevronRight size={18} strokeWidth={1.5} />
+                </button>
+                <div className="ml-2">
+                  <Breadcrumb path={selectedFile} />
+                </div>
               </div>
-            </>
-          ) : viewMode === 'tag-view' && selectedTag ? (
-            <TagView
-              tag={selectedTag}
-              getContent={getTagContent}
-              onDeleteTag={handleDeleteTag}
-              onPublish={handlePublish}
-            />
-          ) : (
-            <div className="flex-1 flex items-center justify-center">
-              <div className="text-center text-gray-500">
-                <div className="text-4xl mb-4">📝</div>
-                <p>Select a file to view its contents</p>
-                <p className="text-sm mt-2">or</p>
-                <p className="text-sm">Press Cmd+P to open the command palette</p>
+              <div className="flex items-center gap-1">
+                <button className="p-1 hover:bg-[#e8e8e8] rounded transition-colors" style={{ color: '#737373' }} title="More options">
+                  <MoreHorizontal size={18} strokeWidth={1.5} />
+                </button>
               </div>
             </div>
-          )}
+
+            {/* Markdown Editor */}
+            <div className="flex-1 overflow-hidden">
+              <MarkdownEditor
+                key={selectedFile}
+                initialContent={fileContent}
+                filePath={selectedFile}
+                onSave={handleSave}
+              />
+            </div>
+
+            {/* Status bar - matching Obsidian layout */}
+            <div className="h-7 flex items-center justify-end px-4 gap-4 text-xs" style={{ backgroundColor: '#f6f6f6', borderTop: '1px solid #e0e0e0', color: '#737373' }}>
+              <div className="flex items-center gap-1">
+                <Link size={12} strokeWidth={1.5} />
+                <span>0 backlinks</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Pencil size={12} strokeWidth={1.5} />
+              </div>
+              <span>{getWordCount(fileContent)} {getWordCount(fileContent) === 1 ? 'word' : 'words'}</span>
+              <span>{getCharCount(fileContent)} {getCharCount(fileContent) === 1 ? 'character' : 'characters'}</span>
+            </div>
+          </>
+        ) : viewMode === 'tag-view' && selectedTag ? (
+          <TagView
+            tag={selectedTag}
+            getContent={getTagContent}
+            onDeleteTag={handleDeleteTag}
+            onPublish={handlePublish}
+          />
+        ) : (
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-xl bg-[#f5f5f5] flex items-center justify-center mx-auto mb-4">
+                <FileText className="w-8 h-8" style={{ color: '#999999' }} strokeWidth={1.5} />
+              </div>
+              <p className="text-[#5c5c5c] mb-1">Select a file to view</p>
+              <p className="text-xs" style={{ color: '#999999' }}>
+                Press <kbd className="px-1.5 py-0.5 bg-[#f5f5f5] rounded text-[#5c5c5c]">⌘P</kbd> to open command palette
+              </p>
+            </div>
+          </div>
+        )}
         </div>
       </div>
     </div>

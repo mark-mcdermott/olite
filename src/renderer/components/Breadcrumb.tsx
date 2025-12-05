@@ -20,28 +20,30 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = ({ path, onNavigate }) => {
   });
 
   return (
-    <div className="flex items-center gap-2 text-sm text-gray-600 overflow-x-auto">
+    <div className="flex items-center gap-1.5 text-sm overflow-x-auto">
       {/* Home/Vault icon */}
       <button
         onClick={() => onNavigate?.('')}
-        className="flex items-center hover:text-gray-900 transition-colors flex-shrink-0"
+        className="flex items-center text-obsidian-text-muted hover:text-accent transition-colors flex-shrink-0"
         title="Vault root"
       >
-        <span className="text-lg">🏠</span>
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+        </svg>
       </button>
 
       {/* Path segments */}
       {pathSegments.map((segment, index) => (
         <React.Fragment key={segment.path}>
-          <span className="text-gray-400 flex-shrink-0">/</span>
+          <span className="text-obsidian-text-muted flex-shrink-0">/</span>
           {segment.isLast ? (
-            <span className="font-medium text-gray-900 truncate">
+            <span className="font-medium text-obsidian-text truncate">
               {segment.name}
             </span>
           ) : (
             <button
               onClick={() => onNavigate?.(segment.path)}
-              className="hover:text-gray-900 hover:underline transition-colors truncate"
+              className="text-obsidian-text-secondary hover:text-accent transition-colors truncate"
             >
               {segment.name}
             </button>

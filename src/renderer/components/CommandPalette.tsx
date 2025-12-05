@@ -207,49 +207,77 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center pt-20 z-50"
+      className="fixed inset-0 bg-black/70 flex items-start justify-center pt-20 z-50 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-lg shadow-2xl w-full max-w-2xl overflow-hidden"
+        className="bg-obsidian-bg-secondary rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden border border-obsidian-border"
         onClick={e => e.stopPropagation()}
       >
         {/* Search input */}
-        <div className="p-4 border-b border-gray-200">
-          <input
-            ref={inputRef}
-            type="text"
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            placeholder="Type to search files, tags, or commands..."
-            className="w-full px-4 py-2 text-lg border-none outline-none"
-          />
+        <div className="p-4 border-b border-obsidian-border">
+          <div className="flex items-center gap-3">
+            <svg className="w-5 h-5 text-obsidian-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              ref={inputRef}
+              type="text"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Search files, tags, or commands..."
+              className="w-full bg-transparent text-lg text-obsidian-text placeholder-obsidian-text-muted border-none outline-none"
+            />
+          </div>
         </div>
 
         {/* Results */}
         <div className="max-h-96 overflow-y-auto">
           {filteredCommands.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
+            <div className="p-8 text-center text-obsidian-text-muted">
               No results found for "{searchQuery}"
             </div>
           ) : (
-            <div className="divide-y divide-gray-100">
+            <div>
               {filteredCommands.map((cmd, index) => (
                 <button
                   key={cmd.id}
                   onClick={cmd.action}
-                  className={`w-full px-4 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors ${
-                    index === selectedIndex ? 'bg-blue-50' : ''
+                  className={`w-full px-4 py-2.5 flex items-center gap-3 transition-colors ${
+                    index === selectedIndex
+                      ? 'bg-accent/20 text-accent'
+                      : 'hover:bg-obsidian-hover text-obsidian-text'
                   }`}
                 >
-                  <span className="text-2xl">{cmd.icon}</span>
-                  <div className="flex-1 text-left">
-                    <div className="font-medium text-gray-900">{cmd.title}</div>
-                    {cmd.description && (
-                      <div className="text-sm text-gray-500">{cmd.description}</div>
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                    index === selectedIndex ? 'bg-accent/20' : 'bg-obsidian-surface'
+                  }`}>
+                    {cmd.category === 'file' && (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    )}
+                    {cmd.category === 'tag' && (
+                      <span className="text-accent font-bold">#</span>
+                    )}
+                    {cmd.category === 'daily' && (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    )}
+                    {cmd.category === 'action' && (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
+                      </svg>
                     )}
                   </div>
-                  <div className="text-xs text-gray-400 uppercase">
+                  <div className="flex-1 text-left">
+                    <div className="font-medium">{cmd.title}</div>
+                    {cmd.description && (
+                      <div className="text-xs text-obsidian-text-muted truncate">{cmd.description}</div>
+                    )}
+                  </div>
+                  <div className="text-[10px] text-obsidian-text-muted uppercase px-2 py-0.5 bg-obsidian-surface rounded">
                     {cmd.category}
                   </div>
                 </button>
@@ -259,10 +287,16 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         </div>
 
         {/* Footer hint */}
-        <div className="px-4 py-2 bg-gray-50 border-t border-gray-200 flex items-center gap-4 text-xs text-gray-500">
-          <span>↑↓ Navigate</span>
-          <span>↵ Select</span>
-          <span>Esc Close</span>
+        <div className="px-4 py-2 bg-obsidian-bg-tertiary border-t border-obsidian-border flex items-center gap-4 text-xs text-obsidian-text-muted">
+          <span className="flex items-center gap-1">
+            <kbd className="px-1 py-0.5 bg-obsidian-surface rounded text-[10px]">↑↓</kbd> Navigate
+          </span>
+          <span className="flex items-center gap-1">
+            <kbd className="px-1 py-0.5 bg-obsidian-surface rounded text-[10px]">↵</kbd> Select
+          </span>
+          <span className="flex items-center gap-1">
+            <kbd className="px-1 py-0.5 bg-obsidian-surface rounded text-[10px]">Esc</kbd> Close
+          </span>
         </div>
       </div>
     </div>

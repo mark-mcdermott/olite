@@ -103,16 +103,16 @@ export const PublishDialog: React.FC<PublishDialogProps> = ({ tag, onClose }) =>
   const getStatusColor = (status: PublishStatus) => {
     switch (status) {
       case 'completed':
-        return 'text-green-600';
+        return 'text-green-500';
       case 'failed':
-        return 'text-red-600';
+        return 'text-red-500';
       case 'preparing':
       case 'pushing':
       case 'building':
       case 'deploying':
-        return 'text-blue-600';
+        return 'text-accent';
       default:
-        return 'text-gray-600';
+        return 'text-obsidian-text-secondary';
     }
   };
 
@@ -131,20 +131,20 @@ export const PublishDialog: React.FC<PublishDialogProps> = ({ tag, onClose }) =>
 
   if (blogs.length === 0) {
     return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div className="bg-white shadow-xl rounded-lg p-6 max-w-md w-full m-4" style={{ backgroundColor: '#ffffff' }}>
-          <h2 className="text-xl font-semibold mb-4 text-gray-900">
+      <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm">
+        <div className="bg-obsidian-bg-secondary shadow-xl rounded-xl p-6 max-w-md w-full m-4 border border-obsidian-border">
+          <h2 className="text-lg font-semibold mb-4 text-obsidian-text">
             No Blogs Configured
           </h2>
-          <p className="text-gray-600 dark:text-gray-300 mb-4">
-            You need to configure at least one blog before publishing. Would you like to set one up?
+          <p className="text-obsidian-text-secondary mb-4">
+            You need to configure at least one blog before publishing. Open Settings to add one.
           </p>
           <div className="flex justify-end gap-2">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md"
+              className="px-4 py-2 text-obsidian-text-secondary hover:bg-obsidian-hover rounded-lg transition-colors"
             >
-              Cancel
+              Close
             </button>
           </div>
         </div>
@@ -153,22 +153,22 @@ export const PublishDialog: React.FC<PublishDialogProps> = ({ tag, onClose }) =>
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white shadow-xl rounded-lg p-6 max-w-md w-full m-4" style={{ backgroundColor: '#ffffff' }}>
-        <h2 className="text-xl font-semibold mb-4 text-gray-900">
-          Publish #{tag}
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm">
+      <div className="bg-obsidian-bg-secondary shadow-xl rounded-xl p-6 max-w-md w-full m-4 border border-obsidian-border">
+        <h2 className="text-lg font-semibold mb-4 text-obsidian-text flex items-center gap-2">
+          Publish <span className="text-accent">#{tag}</span>
         </h2>
 
         {!publishing ? (
           <>
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-obsidian-text-secondary mb-2">
                 Select Blog
               </label>
               <select
                 value={selectedBlogId}
                 onChange={e => setSelectedBlogId(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900"
+                className="w-full px-3 py-2 border border-obsidian-border rounded-lg bg-obsidian-surface text-obsidian-text focus:border-accent focus:ring-1 focus:ring-accent outline-none"
               >
                 {blogs.map(blog => (
                   <option key={blog.id} value={blog.id}>
@@ -181,13 +181,13 @@ export const PublishDialog: React.FC<PublishDialogProps> = ({ tag, onClose }) =>
             <div className="flex justify-end gap-2">
               <button
                 onClick={handleClose}
-                className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md"
+                className="px-4 py-2 text-obsidian-text-secondary hover:bg-obsidian-hover rounded-lg transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handlePublish}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                className="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-dark transition-colors"
               >
                 Publish
               </button>
@@ -200,18 +200,18 @@ export const PublishDialog: React.FC<PublishDialogProps> = ({ tag, onClose }) =>
                 <span className={`text-sm font-medium ${getStatusColor(status)}`}>
                   {status.charAt(0).toUpperCase() + status.slice(1)}
                 </span>
-                <span className="text-sm text-gray-600">
+                <span className="text-sm text-obsidian-text-secondary">
                   {progress}%
                 </span>
               </div>
 
               {/* Progress bar */}
-              <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
+              <div className="w-full bg-obsidian-surface rounded-full h-1.5 mb-4">
                 <div
-                  className={`h-2 rounded-full transition-all duration-300 ${
-                    status === 'failed' ? 'bg-red-600' :
-                    status === 'completed' ? 'bg-green-600' :
-                    'bg-blue-600'
+                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                    status === 'failed' ? 'bg-red-500' :
+                    status === 'completed' ? 'bg-green-500' :
+                    'bg-accent'
                   }`}
                   style={{ width: `${progress}%` }}
                 />
@@ -222,17 +222,17 @@ export const PublishDialog: React.FC<PublishDialogProps> = ({ tag, onClose }) =>
                 {steps.map((step, index) => (
                   <div key={index} className="flex items-start gap-2">
                     <span className={`text-sm ${
-                      step.status === 'completed' ? 'text-green-600' :
-                      step.status === 'failed' ? 'text-red-600' :
-                      step.status === 'in_progress' ? 'text-blue-600' :
-                      'text-gray-400'
+                      step.status === 'completed' ? 'text-green-500' :
+                      step.status === 'failed' ? 'text-red-500' :
+                      step.status === 'in_progress' ? 'text-accent' :
+                      'text-obsidian-text-muted'
                     }`}>
                       {getStepIcon(step.status)}
                     </span>
                     <div className="flex-1">
-                      <p className="text-sm text-gray-900">{step.name}</p>
+                      <p className="text-sm text-obsidian-text">{step.name}</p>
                       {step.message && (
-                        <p className="text-xs text-gray-500">{step.message}</p>
+                        <p className="text-xs text-obsidian-text-muted">{step.message}</p>
                       )}
                     </div>
                   </div>
@@ -240,8 +240,8 @@ export const PublishDialog: React.FC<PublishDialogProps> = ({ tag, onClose }) =>
               </div>
 
               {error && (
-                <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
-                  <p className="text-sm text-red-600">{error}</p>
+                <div className="mt-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+                  <p className="text-sm text-red-400">{error}</p>
                 </div>
               )}
             </div>
@@ -250,7 +250,7 @@ export const PublishDialog: React.FC<PublishDialogProps> = ({ tag, onClose }) =>
               {(status === 'completed' || status === 'failed') && (
                 <button
                   onClick={handleClose}
-                  className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
+                  className="px-4 py-2 bg-obsidian-surface text-obsidian-text rounded-lg hover:bg-obsidian-hover transition-colors"
                 >
                   Close
                 </button>

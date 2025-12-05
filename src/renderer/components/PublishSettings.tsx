@@ -22,9 +22,10 @@ interface BlogTarget {
 
 interface PublishSettingsProps {
   onClose: () => void;
+  vaultPath?: string | null;
 }
 
-export const PublishSettings: React.FC<PublishSettingsProps> = ({ onClose }) => {
+export const PublishSettings: React.FC<PublishSettingsProps> = ({ onClose, vaultPath }) => {
   const [blogs, setBlogs] = useState<BlogTarget[]>([]);
   const [editingBlog, setEditingBlog] = useState<BlogTarget | null>(null);
   const [loading, setLoading] = useState(true);
@@ -149,9 +150,12 @@ export const PublishSettings: React.FC<PublishSettingsProps> = ({ onClose }) => 
 
   if (loading) {
     return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-lg p-8 shadow-xl" style={{ backgroundColor: '#ffffff' }}>
-          <p className="text-gray-600">Loading...</p>
+      <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm">
+        <div className="bg-obsidian-bg-secondary rounded-xl p-8 shadow-xl border border-obsidian-border">
+          <div className="flex items-center gap-3">
+            <div className="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin"></div>
+            <p className="text-obsidian-text-secondary">Loading...</p>
+          </div>
         </div>
       </div>
     );
@@ -159,36 +163,36 @@ export const PublishSettings: React.FC<PublishSettingsProps> = ({ onClose }) => 
 
   if (editingBlog) {
     return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 overflow-y-auto">
-        <div className="bg-white rounded-lg p-6 max-w-2xl w-full m-4 max-h-[90vh] overflow-y-auto shadow-xl" style={{ backgroundColor: '#ffffff' }}>
-          <h2 className="text-xl font-semibold mb-4 text-gray-900">
+      <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 overflow-y-auto backdrop-blur-sm">
+        <div className="bg-obsidian-bg-secondary rounded-xl p-6 max-w-2xl w-full m-4 max-h-[90vh] overflow-y-auto shadow-xl border border-obsidian-border">
+          <h2 className="text-lg font-semibold mb-4 text-obsidian-text">
             {blogs.find(b => b.id === editingBlog.id) ? 'Edit Blog' : 'Add Blog'}
           </h2>
 
           <div className="space-y-4">
             {/* Blog Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Blog Name <span className="text-red-600">*</span>
+              <label className="block text-sm font-medium text-obsidian-text-secondary mb-1">
+                Blog Name <span className="text-red-400">*</span>
               </label>
               <input
                 type="text"
                 value={editingBlog.name}
                 onChange={e => setEditingBlog({ ...editingBlog, name: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900"
+                className="w-full px-3 py-2 border border-obsidian-border rounded-lg bg-obsidian-surface text-obsidian-text placeholder-obsidian-text-muted focus:border-accent focus:ring-1 focus:ring-accent outline-none"
                 placeholder="My Blog"
                 required
               />
             </div>
 
             {/* GitHub Config */}
-            <div className="border-t border-gray-200 pt-4">
-              <h3 className="text-lg font-medium mb-3 text-gray-900">GitHub</h3>
+            <div className="border-t border-obsidian-border pt-4">
+              <h3 className="text-sm font-semibold mb-3 text-obsidian-text uppercase tracking-wider">GitHub</h3>
 
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Repository (username/repo) <span className="text-red-600">*</span>
+                  <label className="block text-sm font-medium text-obsidian-text-secondary mb-1">
+                    Repository (username/repo) <span className="text-red-400">*</span>
                   </label>
                   <input
                     type="text"
@@ -197,14 +201,14 @@ export const PublishSettings: React.FC<PublishSettingsProps> = ({ onClose }) => 
                       ...editingBlog,
                       github: { ...editingBlog.github, repo: e.target.value }
                     })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900"
+                    className="w-full px-3 py-2 border border-obsidian-border rounded-lg bg-obsidian-surface text-obsidian-text placeholder-obsidian-text-muted focus:border-accent focus:ring-1 focus:ring-accent outline-none"
                     placeholder="username/blog-repo"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Branch <span className="text-red-600">*</span>
+                  <label className="block text-sm font-medium text-obsidian-text-secondary mb-1">
+                    Branch <span className="text-red-400">*</span>
                   </label>
                   <input
                     type="text"
@@ -213,14 +217,14 @@ export const PublishSettings: React.FC<PublishSettingsProps> = ({ onClose }) => 
                       ...editingBlog,
                       github: { ...editingBlog.github, branch: e.target.value }
                     })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900"
+                    className="w-full px-3 py-2 border border-obsidian-border rounded-lg bg-obsidian-surface text-obsidian-text placeholder-obsidian-text-muted focus:border-accent focus:ring-1 focus:ring-accent outline-none"
                     placeholder="main"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Personal Access Token <span className="text-red-600">*</span>
+                  <label className="block text-sm font-medium text-obsidian-text-secondary mb-1">
+                    Personal Access Token <span className="text-red-400">*</span>
                   </label>
                   <input
                     type="password"
@@ -229,7 +233,7 @@ export const PublishSettings: React.FC<PublishSettingsProps> = ({ onClose }) => 
                       ...editingBlog,
                       github: { ...editingBlog.github, token: e.target.value }
                     })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900"
+                    className="w-full px-3 py-2 border border-obsidian-border rounded-lg bg-obsidian-surface text-obsidian-text placeholder-obsidian-text-muted focus:border-accent focus:ring-1 focus:ring-accent outline-none"
                     placeholder="ghp_..."
                   />
                 </div>
@@ -237,15 +241,15 @@ export const PublishSettings: React.FC<PublishSettingsProps> = ({ onClose }) => 
             </div>
 
             {/* Cloudflare Pages Config (Optional) */}
-            <div className="border-t border-gray-200 pt-4">
-              <h3 className="text-lg font-medium mb-1 text-gray-900">Cloudflare Pages</h3>
-              <p className="text-sm text-gray-500 mb-3">
+            <div className="border-t border-obsidian-border pt-4">
+              <h3 className="text-sm font-semibold mb-1 text-obsidian-text uppercase tracking-wider">Cloudflare Pages</h3>
+              <p className="text-xs text-obsidian-text-muted mb-3">
                 Optional: Add these to track deployment status
               </p>
 
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-obsidian-text-secondary mb-1">
                     Account ID
                   </label>
                   <input
@@ -259,16 +263,16 @@ export const PublishSettings: React.FC<PublishSettingsProps> = ({ onClose }) => 
                         token: editingBlog.cloudflare?.token || ''
                       }
                     })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900"
+                    className="w-full px-3 py-2 border border-obsidian-border rounded-lg bg-obsidian-surface text-obsidian-text placeholder-obsidian-text-muted focus:border-accent focus:ring-1 focus:ring-accent outline-none"
                     placeholder="Your Cloudflare account ID"
                   />
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-obsidian-text-muted mt-1">
                     Found in Cloudflare dashboard URL or Workers & Pages → Overview
                   </p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-obsidian-text-secondary mb-1">
                     Project Name
                   </label>
                   <input
@@ -282,16 +286,16 @@ export const PublishSettings: React.FC<PublishSettingsProps> = ({ onClose }) => 
                         token: editingBlog.cloudflare?.token || ''
                       }
                     })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900"
+                    className="w-full px-3 py-2 border border-obsidian-border rounded-lg bg-obsidian-surface text-obsidian-text placeholder-obsidian-text-muted focus:border-accent focus:ring-1 focus:ring-accent outline-none"
                     placeholder="my-blog"
                   />
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-obsidian-text-muted mt-1">
                     The name of your Pages project (not the domain)
                   </p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-obsidian-text-secondary mb-1">
                     API Token
                   </label>
                   <input
@@ -305,10 +309,10 @@ export const PublishSettings: React.FC<PublishSettingsProps> = ({ onClose }) => 
                         token: e.target.value
                       }
                     })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900"
+                    className="w-full px-3 py-2 border border-obsidian-border rounded-lg bg-obsidian-surface text-obsidian-text placeholder-obsidian-text-muted focus:border-accent focus:ring-1 focus:ring-accent outline-none"
                     placeholder="Your Cloudflare API token"
                   />
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-obsidian-text-muted mt-1">
                     Create at: dash.cloudflare.com → My Profile → API Tokens
                   </p>
                 </div>
@@ -316,13 +320,13 @@ export const PublishSettings: React.FC<PublishSettingsProps> = ({ onClose }) => 
             </div>
 
             {/* Content Config */}
-            <div className="border-t border-gray-200 pt-4">
-              <h3 className="text-lg font-medium mb-3 text-gray-900">Content</h3>
+            <div className="border-t border-obsidian-border pt-4">
+              <h3 className="text-sm font-semibold mb-3 text-obsidian-text uppercase tracking-wider">Content</h3>
 
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Content Path <span className="text-red-600">*</span>
+                  <label className="block text-sm font-medium text-obsidian-text-secondary mb-1">
+                    Content Path <span className="text-red-400">*</span>
                   </label>
                   <input
                     type="text"
@@ -331,14 +335,14 @@ export const PublishSettings: React.FC<PublishSettingsProps> = ({ onClose }) => 
                       ...editingBlog,
                       content: { ...editingBlog.content, path: e.target.value }
                     })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900"
+                    className="w-full px-3 py-2 border border-obsidian-border rounded-lg bg-obsidian-surface text-obsidian-text placeholder-obsidian-text-muted focus:border-accent focus:ring-1 focus:ring-accent outline-none"
                     placeholder="src/content/posts/"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Filename Template <span className="text-red-600">*</span>
+                  <label className="block text-sm font-medium text-obsidian-text-secondary mb-1">
+                    Filename Template <span className="text-red-400">*</span>
                   </label>
                   <input
                     type="text"
@@ -347,10 +351,10 @@ export const PublishSettings: React.FC<PublishSettingsProps> = ({ onClose }) => 
                       ...editingBlog,
                       content: { ...editingBlog.content, filename: e.target.value }
                     })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900"
+                    className="w-full px-3 py-2 border border-obsidian-border rounded-lg bg-obsidian-surface text-obsidian-text placeholder-obsidian-text-muted focus:border-accent focus:ring-1 focus:ring-accent outline-none"
                     placeholder="{tag}.md"
                   />
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-obsidian-text-muted mt-1">
                     Use {'{tag}'} as a placeholder for the tag name
                   </p>
                 </div>
@@ -361,13 +365,13 @@ export const PublishSettings: React.FC<PublishSettingsProps> = ({ onClose }) => 
           <div className="flex justify-end gap-2 mt-6">
             <button
               onClick={handleCancel}
-              className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md"
+              className="px-4 py-2 text-obsidian-text-secondary hover:bg-obsidian-hover rounded-lg transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={handleSaveBlog}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              className="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-dark transition-colors"
             >
               Save
             </button>
@@ -378,17 +382,24 @@ export const PublishSettings: React.FC<PublishSettingsProps> = ({ onClose }) => 
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 max-w-3xl w-full m-4 max-h-[90vh] overflow-y-auto shadow-xl" style={{ backgroundColor: '#ffffff' }}>
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm">
+      <div className="bg-obsidian-bg-secondary rounded-xl p-6 max-w-3xl w-full m-4 max-h-[90vh] overflow-y-auto shadow-xl border border-obsidian-border">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold text-gray-900">
-            Blog Publishing Settings
-          </h2>
+          <div>
+            <h2 className="text-lg font-semibold text-obsidian-text">Settings</h2>
+            {vaultPath && (
+              <p className="text-xs text-obsidian-text-muted mt-0.5">
+                Vault: {vaultPath}
+              </p>
+            )}
+          </div>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
+            className="text-obsidian-text-muted hover:text-obsidian-text transition-colors"
           >
-            ✕
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
+            </svg>
           </button>
         </div>
 
@@ -396,24 +407,24 @@ export const PublishSettings: React.FC<PublishSettingsProps> = ({ onClose }) => 
           {blogs.map(blog => (
             <div
               key={blog.id}
-              className="flex items-center justify-between p-4 border border-gray-200 rounded-lg"
+              className="flex items-center justify-between p-4 border border-obsidian-border rounded-lg bg-obsidian-surface/50 hover:bg-obsidian-surface transition-colors"
             >
               <div>
-                <h3 className="font-medium text-gray-900">{blog.name}</h3>
-                <p className="text-sm text-gray-600">
+                <h3 className="font-medium text-obsidian-text">{blog.name}</h3>
+                <p className="text-sm text-obsidian-text-muted">
                   {blog.github.repo}{blog.cloudflare?.projectName ? ` → ${blog.cloudflare.projectName}` : ''}
                 </p>
               </div>
               <div className="flex gap-2">
                 <button
                   onClick={() => handleEditBlog(blog)}
-                  className="px-3 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded"
+                  className="px-3 py-1 text-sm text-accent hover:bg-accent/10 rounded-lg transition-colors"
                 >
                   Edit
                 </button>
                 <button
                   onClick={() => handleDeleteBlog(blog.id)}
-                  className="px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded"
+                  className="px-3 py-1 text-sm text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
                 >
                   Delete
                 </button>
@@ -422,22 +433,22 @@ export const PublishSettings: React.FC<PublishSettingsProps> = ({ onClose }) => 
           ))}
 
           {blogs.length === 0 && (
-            <p className="text-center text-gray-500 py-8">
+            <p className="text-center text-obsidian-text-muted py-8">
               No blog configurations yet. Add one to get started!
             </p>
           )}
         </div>
 
-        <div className="flex justify-between items-center pt-4 border-t border-gray-200">
+        <div className="flex justify-between items-center pt-4 border-t border-obsidian-border">
           <button
             onClick={handleAddBlog}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            className="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-dark transition-colors"
           >
             Add Blog
           </button>
           <button
             onClick={onClose}
-            className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md"
+            className="px-4 py-2 text-obsidian-text-secondary hover:bg-obsidian-hover rounded-lg transition-colors"
           >
             Close
           </button>

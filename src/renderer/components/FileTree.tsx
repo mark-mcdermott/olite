@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ChevronRight } from 'lucide-react';
 import type { FileNode } from '../../preload';
 
 interface FileTreeProps {
@@ -8,7 +9,7 @@ interface FileTreeProps {
 }
 
 const FileTreeNode: React.FC<FileTreeProps> = ({ node, onFileClick, level = 0 }) => {
-  const [isExpanded, setIsExpanded] = useState(level < 2); // Auto-expand first 2 levels
+  const [isExpanded, setIsExpanded] = useState(level < 2);
 
   const handleClick = () => {
     if (node.type === 'folder') {
@@ -18,29 +19,64 @@ const FileTreeNode: React.FC<FileTreeProps> = ({ node, onFileClick, level = 0 })
     }
   };
 
-  const icon = node.type === 'folder' ? (isExpanded ? '📂' : '📁') : '📄';
-  const indentStyle = { paddingLeft: `${level * 16}px` };
+  // Render indent guides (vertical lines) for each level
+  const renderIndentGuides = () => {
+    const guides = [];
+    for (let i = 0; i < level; i++) {
+      guides.push(
+        <div
+          key={i}
+          className="w-3 h-full flex-shrink-0 relative"
+          style={{ marginLeft: i === 0 ? '8px' : '0' }}
+        >
+          <div
+            className="absolute left-1/2 top-0 bottom-0 w-px"
+            style={{ backgroundColor: '#e0e0e0' }}
+          />
+        </div>
+      );
+    }
+    return guides;
+  };
 
   return (
     <div>
       <div
-        className="flex items-center gap-2 px-2 py-1 hover:bg-gray-100 cursor-pointer text-sm"
-        style={indentStyle}
+        className="flex items-center gap-2 pr-2 hover:bg-[#e8e8e8] cursor-pointer group"
+        style={{
+          fontSize: '13.75px',
+          color: '#5c5c5c',
+          lineHeight: '2',
+          paddingLeft: level === 0 ? '8px' : '0',
+          marginLeft: node.type === 'file' ? '16px' : '0'
+        }}
         onClick={handleClick}
       >
-        <span className="text-base">{icon}</span>
-        <span className="text-gray-800">{node.name}</span>
+        {level > 0 && renderIndentGuides()}
+        {node.type === 'folder' && (
+          <ChevronRight
+            size={16}
+            strokeWidth={2}
+            className={`transition-transform flex-shrink-0 ${isExpanded ? 'rotate-90' : ''}`}
+            style={{ color: '#b6b6b6' }}
+          />
+        )}
+        <span className="truncate">
+          {node.name.replace('.md', '')}
+        </span>
       </div>
       {node.type === 'folder' && isExpanded && node.children && (
         <div>
-          {node.children.map((child, index) => (
-            <FileTreeNode
-              key={`${child.path}-${index}`}
-              node={child}
-              onFileClick={onFileClick}
-              level={level + 1}
-            />
-          ))}
+          {node.children
+            .filter(child => !child.name.startsWith('.'))
+            .map((child, index) => (
+              <FileTreeNode
+                key={`${child.path}-${index}`}
+                node={child}
+                onFileClick={onFileClick}
+                level={level + 1}
+              />
+            ))}
         </div>
       )}
     </div>
@@ -55,16 +91,23 @@ interface FileTreeComponentProps {
 export const FileTree: React.FC<FileTreeComponentProps> = ({ tree, onFileClick }) => {
   if (!tree) {
     return (
-      <div className="p-4 text-gray-500 text-sm">No vault loaded</div>
+      <div className="p-4 text-obsidian-text-muted text-sm">No vault loaded</div>
     );
   }
 
   return (
-    <div className="w-full h-full overflow-y-auto bg-white border-r border-gray-200">
-      <div className="p-2 border-b border-gray-200 bg-gray-50">
-        <h3 className="text-xs font-semibold text-gray-600 uppercase">Files</h3>
-      </div>
-      <FileTreeNode node={tree} onFileClick={onFileClick} level={0} />
+    <div className="w-full h-full overflow-y-auto pt-1">
+      {/* Skip root folder, render its children directly - no header like Obsidian */}
+      {tree.children
+        ?.filter(child => !child.name.startsWith('.'))
+        .map((child, index) => (
+          <FileTreeNode
+            key={`${child.path}-${index}`}
+            node={child}
+            onFileClick={onFileClick}
+            level={0}
+          />
+        ))}
     </div>
   );
 };

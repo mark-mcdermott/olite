@@ -103,26 +103,26 @@ export const DailyNotesNav: React.FC<DailyNotesNavProps> = ({
   };
 
   return (
-    <div className="h-full flex flex-col bg-white">
+    <div className="h-full flex flex-col">
       {/* Quick actions */}
-      <div className="p-3 border-b border-gray-200">
+      <div className="p-3 border-b border-obsidian-border">
         <div className="space-y-2">
           <button
             onClick={goToToday}
-            className="w-full px-3 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded transition-colors"
+            className="w-full px-3 py-2 text-sm font-medium text-white bg-accent hover:bg-accent-dark rounded transition-colors"
           >
             Today
           </button>
           <div className="flex gap-2">
             <button
               onClick={goToYesterday}
-              className="flex-1 px-3 py-1.5 text-xs text-gray-700 bg-gray-100 hover:bg-gray-200 rounded transition-colors"
+              className="flex-1 px-3 py-1.5 text-xs text-obsidian-text-secondary bg-obsidian-surface hover:bg-obsidian-hover rounded transition-colors"
             >
               Yesterday
             </button>
             <button
               onClick={goToTomorrow}
-              className="flex-1 px-3 py-1.5 text-xs text-gray-700 bg-gray-100 hover:bg-gray-200 rounded transition-colors"
+              className="flex-1 px-3 py-1.5 text-xs text-obsidian-text-secondary bg-obsidian-surface hover:bg-obsidian-hover rounded transition-colors"
             >
               Tomorrow
             </button>
@@ -136,16 +136,20 @@ export const DailyNotesNav: React.FC<DailyNotesNavProps> = ({
         <div className="flex items-center justify-between mb-3">
           <button
             onClick={previousMonth}
-            className="p-1 hover:bg-gray-100 rounded transition-colors"
+            className="p-1 hover:bg-obsidian-hover rounded transition-colors text-obsidian-text-secondary hover:text-obsidian-text"
           >
-            ←
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
           </button>
-          <span className="text-sm font-medium text-gray-700">{monthName}</span>
+          <span className="text-sm font-medium text-obsidian-text">{monthName}</span>
           <button
             onClick={nextMonth}
-            className="p-1 hover:bg-gray-100 rounded transition-colors"
+            className="p-1 hover:bg-obsidian-hover rounded transition-colors text-obsidian-text-secondary hover:text-obsidian-text"
           >
-            →
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
           </button>
         </div>
 
@@ -154,7 +158,7 @@ export const DailyNotesNav: React.FC<DailyNotesNavProps> = ({
           {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
             <div
               key={i}
-              className="text-center text-xs font-medium text-gray-500"
+              className="text-center text-[10px] font-medium text-obsidian-text-muted uppercase"
             >
               {day}
             </div>
@@ -176,14 +180,14 @@ export const DailyNotesNav: React.FC<DailyNotesNavProps> = ({
                 onClick={() => onDateSelect(dateStr)}
                 className={`
                   aspect-square p-1 text-xs rounded transition-colors relative
-                  ${!inCurrentMonth ? 'text-gray-300' : 'text-gray-700'}
-                  ${isToday ? 'font-bold ring-2 ring-blue-500' : ''}
-                  ${isSelected ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'}
+                  ${!inCurrentMonth ? 'text-obsidian-text-muted/50' : 'text-obsidian-text-secondary'}
+                  ${isToday ? 'font-bold ring-1 ring-accent text-accent' : ''}
+                  ${isSelected ? 'bg-accent/20 text-accent' : 'hover:bg-obsidian-hover'}
                 `}
               >
                 {date.getDate()}
                 {noteExists && inCurrentMonth && (
-                  <div className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-blue-500 rounded-full" />
+                  <div className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-accent rounded-full" />
                 )}
               </button>
             );
