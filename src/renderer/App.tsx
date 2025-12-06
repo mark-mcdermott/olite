@@ -19,51 +19,144 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Columns,
-  BookOpen
+  BookOpen,
+  FolderTree,
+  Hash,
+  Eye
 } from 'lucide-react';
 import { useVault } from './hooks/useVault';
 import { useTags } from './hooks/useTags';
 import { FileTree } from './components/FileTree';
 import { MarkdownEditor } from './components/MarkdownEditor';
+import { LiveMarkdownEditor } from './components/LiveMarkdownEditor';
 import { TagBrowser } from './components/TagBrowser';
 import { TagView } from './components/TagView';
 import { DailyNotesNav } from './components/DailyNotesNav';
 import { CommandPalette } from './components/CommandPalette';
 import { Breadcrumb } from './components/Breadcrumb';
 import { PublishDialog } from './components/PublishDialog';
-import { PublishSettings } from './components/PublishSettings';
+import { SettingsPage } from './components/SettingsPage';
+import { CreateFileDialog } from './components/CreateFileDialog';
 
 type SidebarTab = 'files' | 'tags' | 'daily';
-type ViewMode = 'editor' | 'tag-view';
-type EditorViewMode = 'edit' | 'split' | 'preview';
+type EditorViewMode = 'markdown' | 'editor' | 'split' | 'preview';
+type Tab = { type: 'file'; path: string; content: string } | { type: 'tag'; tag: string };
 
 const App: React.FC = () => {
-  const { vaultPath, fileTree, loading, error, readFile, writeFile, getTodayNote, getDailyNote, getDailyNoteDates, refreshFileTree } = useVault();
+  const { vaultPath, fileTree, loading, error, readFile, writeFile, createFile, createFolder, deleteFile, getTodayNote, getDailyNote, getDailyNoteDates, refreshFileTree } = useVault();
   const { tags, loading: tagsLoading, getTagContent, deleteTag, refreshTags } = useTags();
 
   const [sidebarTab, setSidebarTab] = useState<SidebarTab>('files');
-  const [viewMode, setViewMode] = useState<ViewMode>('editor');
-  const [selectedFile, setSelectedFile] = useState<string | null>(null);
-  const [fileContent, setFileContent] = useState<string>('');
-  const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [openTabs, setOpenTabs] = useState<Tab[]>([]);
+  const [activeTabIndex, setActiveTabIndex] = useState<number>(-1);
+  const [showSettings, setShowSettings] = useState(false);
   const [dailyNoteDates, setDailyNoteDates] = useState<string[]>([]);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [publishDialogOpen, setPublishDialogOpen] = useState(false);
-  const [editorViewMode, setEditorViewMode] = useState<EditorViewMode>('split');
+  const [editorViewMode, setEditorViewMode] = useState<EditorViewMode>('editor');
   const [publishTag, setPublishTag] = useState<string | null>(null);
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [createDialogType, setCreateDialogType] = useState<'file' | 'folder'>('file');
+  const [inlineCreateType, setInlineCreateType] = useState<'file' | 'folder' | null>(null);
   const [sidebarWidth, setSidebarWidth] = useState(260);
   const [isResizing, setIsResizing] = useState(false);
   const resizeRef = useRef<{ startX: number; startWidth: number } | null>(null);
+
+  // Navigation history for back/forward
+  type HistoryEntry = { type: 'file'; path: string } | { type: 'tag'; tag: string } | { type: 'settings' };
+  const [navHistory, setNavHistory] = useState<HistoryEntry[]>([]);
+  const [navHistoryIndex, setNavHistoryIndex] = useState(-1);
+  const isNavigatingRef = useRef(false); // Prevent adding to history during back/forward
+
+  // Derived state for active tab
+  const activeTab = activeTabIndex >= 0 ? openTabs[activeTabIndex] : null;
+  const activeFileTab = activeTab?.type === 'file' ? activeTab : null;
+  const activeTagTab = activeTab?.type === 'tag' ? activeTab : null;
+  const selectedFile = activeFileTab?.path ?? null;
+  const fileContent = activeFileTab?.content ?? '';
+  const selectedTag = activeTagTab?.tag ?? null;
+
+  // Navigation history helpers
+  const pushToHistory = useCallback((entry: HistoryEntry) => {
+    if (isNavigatingRef.current) return; // Don't push during back/forward navigation
+
+    setNavHistory(prev => {
+      // Remove any forward history when pushing new entry
+      const newHistory = prev.slice(0, navHistoryIndex + 1);
+      // Don't add duplicate consecutive entries
+      const lastEntry = newHistory[newHistory.length - 1];
+      if (lastEntry &&
+          lastEntry.type === entry.type &&
+          ((entry.type === 'file' && lastEntry.type === 'file' && lastEntry.path === entry.path) ||
+           (entry.type === 'tag' && lastEntry.type === 'tag' && lastEntry.tag === entry.tag) ||
+           (entry.type === 'settings' && lastEntry.type === 'settings'))) {
+        return prev;
+      }
+      return [...newHistory, entry];
+    });
+    setNavHistoryIndex(prev => prev + 1);
+  }, [navHistoryIndex]);
+
+  const canGoBack = navHistoryIndex > 0;
+  const canGoForward = navHistoryIndex < navHistory.length - 1;
+
+  const navigateToEntry = useCallback(async (entry: HistoryEntry) => {
+    isNavigatingRef.current = true;
+    try {
+      if (entry.type === 'file') {
+        // Check if file is already open in tabs
+        const existingIndex = openTabs.findIndex(tab => tab.type === 'file' && tab.path === entry.path);
+        if (existingIndex >= 0) {
+          setActiveTabIndex(existingIndex);
+          setShowSettings(false);
+        } else {
+          // Need to load the file
+          const content = await readFile(entry.path);
+          setOpenTabs(prev => [...prev, { type: 'file', path: entry.path, content }]);
+          setActiveTabIndex(openTabs.length);
+          setShowSettings(false);
+        }
+      } else if (entry.type === 'tag') {
+        // Check if tag is already open in tabs
+        const existingIndex = openTabs.findIndex(tab => tab.type === 'tag' && tab.tag === entry.tag);
+        if (existingIndex >= 0) {
+          setActiveTabIndex(existingIndex);
+          setShowSettings(false);
+        } else {
+          setOpenTabs(prev => [...prev, { type: 'tag', tag: entry.tag }]);
+          setActiveTabIndex(openTabs.length);
+          setShowSettings(false);
+        }
+      } else if (entry.type === 'settings') {
+        setShowSettings(true);
+      }
+    } finally {
+      isNavigatingRef.current = false;
+    }
+  }, [openTabs, readFile]);
+
+  const goBack = useCallback(async () => {
+    if (!canGoBack) return;
+    const newIndex = navHistoryIndex - 1;
+    setNavHistoryIndex(newIndex);
+    await navigateToEntry(navHistory[newIndex]);
+  }, [canGoBack, navHistoryIndex, navHistory, navigateToEntry]);
+
+  const goForward = useCallback(async () => {
+    if (!canGoForward) return;
+    const newIndex = navHistoryIndex + 1;
+    setNavHistoryIndex(newIndex);
+    await navigateToEntry(navHistory[newIndex]);
+  }, [canGoForward, navHistoryIndex, navHistory, navigateToEntry]);
 
   // Load today's note on mount
   useEffect(() => {
     const loadTodayNote = async () => {
       try {
         const { path, content } = await getTodayNote();
-        setSelectedFile(path);
-        setFileContent(content);
+        setOpenTabs([{ type: 'file', path, content }]);
+        setActiveTabIndex(0);
       } catch (err) {
         console.error('Failed to load today note:', err);
       }
@@ -101,7 +194,7 @@ const App: React.FC = () => {
       // Cmd+, or Ctrl+, to open settings
       if ((e.metaKey || e.ctrlKey) && e.key === ',') {
         e.preventDefault();
-        setSettingsOpen(true);
+        setShowSettings(true);
       }
     };
 
@@ -146,30 +239,114 @@ const App: React.FC = () => {
 
   const handleFileClick = async (path: string) => {
     try {
-      const content = await readFile(path);
-      setSelectedFile(path);
-      setFileContent(content);
-      setViewMode('editor');
-      setSelectedTag(null);
+      // Check if file is already open
+      const existingIndex = openTabs.findIndex(tab => tab.type === 'file' && tab.path === path);
+      if (existingIndex >= 0) {
+        setActiveTabIndex(existingIndex);
+      } else {
+        const content = await readFile(path);
+        setOpenTabs(prev => [...prev, { type: 'file', path, content }]);
+        setActiveTabIndex(openTabs.length);
+      }
+      setShowSettings(false);
+      pushToHistory({ type: 'file', path });
     } catch (err: any) {
       console.error('Failed to read file:', err);
       alert(`Failed to read file: ${err.message}`);
     }
   };
 
+  const handleTabClick = (index: number) => {
+    const tab = openTabs[index];
+    setActiveTabIndex(index);
+    setShowSettings(false);
+    if (tab) {
+      if (tab.type === 'file') {
+        pushToHistory({ type: 'file', path: tab.path });
+      } else {
+        pushToHistory({ type: 'tag', tag: tab.tag });
+      }
+    }
+  };
+
+  const handleCloseTab = (index: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setOpenTabs(prev => prev.filter((_, i) => i !== index));
+    if (activeTabIndex === index) {
+      // If closing active tab, switch to previous tab or next if first
+      setActiveTabIndex(Math.max(0, index - 1));
+    } else if (activeTabIndex > index) {
+      // Adjust active index if closing a tab before it
+      setActiveTabIndex(activeTabIndex - 1);
+    }
+    // If no tabs left, reset
+    if (openTabs.length === 1) {
+      setActiveTabIndex(-1);
+    }
+  };
+
   const handleTagClick = (tag: string) => {
-    setSelectedTag(tag);
-    setViewMode('tag-view');
-    setSelectedFile(null);
+    // Check if tag is already open
+    const existingIndex = openTabs.findIndex(tab => tab.type === 'tag' && tab.tag === tag);
+    if (existingIndex >= 0) {
+      setActiveTabIndex(existingIndex);
+    } else {
+      setOpenTabs(prev => [...prev, { type: 'tag', tag }]);
+      setActiveTabIndex(openTabs.length);
+    }
+    setShowSettings(false);
+    pushToHistory({ type: 'tag', tag });
+  };
+
+  const handleEditorTagClick = (tag: string, newTab: boolean) => {
+    // Check if tag is already open
+    const existingIndex = openTabs.findIndex(tab => tab.type === 'tag' && tab.tag === tag);
+    if (existingIndex >= 0) {
+      setActiveTabIndex(existingIndex);
+    } else {
+      setOpenTabs(prev => [...prev, { type: 'tag', tag }]);
+      setActiveTabIndex(openTabs.length);
+    }
+    setShowSettings(false);
+    setSidebarTab('tags');
+    pushToHistory({ type: 'tag', tag });
+  };
+
+  const handleOpenTodayNote = async () => {
+    try {
+      const { path, content } = await getTodayNote();
+      // Check if file is already open
+      const existingIndex = openTabs.findIndex(tab => tab.type === 'file' && tab.path === path);
+      if (existingIndex >= 0) {
+        setActiveTabIndex(existingIndex);
+      } else {
+        setOpenTabs(prev => [...prev, { type: 'file', path, content }]);
+        setActiveTabIndex(openTabs.length);
+      }
+      setShowSettings(false);
+      pushToHistory({ type: 'file', path });
+
+      // Refresh daily note dates in case a new one was created
+      const dates = await getDailyNoteDates();
+      setDailyNoteDates(dates);
+    } catch (err: any) {
+      console.error('Failed to open today note:', err);
+    }
   };
 
   const handleDateSelect = async (date: string) => {
     try {
       const { path, content } = await getDailyNote(date);
-      setSelectedFile(path);
-      setFileContent(content);
-      setViewMode('editor');
-      setSelectedTag(null);
+      // Check if file is already open
+      const existingIndex = openTabs.findIndex(tab => tab.type === 'file' && tab.path === path);
+      if (existingIndex >= 0) {
+        setActiveTabIndex(existingIndex);
+      } else {
+        setOpenTabs(prev => [...prev, { type: 'file', path, content }]);
+        setActiveTabIndex(openTabs.length);
+      }
+      setShowSettings(false);
+      pushToHistory({ type: 'file', path });
 
       // Refresh daily note dates in case a new one was created
       const dates = await getDailyNoteDates();
@@ -181,11 +358,16 @@ const App: React.FC = () => {
   };
 
   const handleSave = async (content: string) => {
-    if (!selectedFile) return;
+    if (!selectedFile || activeTabIndex < 0) return;
+    const currentTab = openTabs[activeTabIndex];
+    if (currentTab?.type !== 'file') return;
 
     try {
       await writeFile(selectedFile, content);
-      setFileContent(content);
+      // Update content in the tabs array
+      setOpenTabs(prev => prev.map((tab, i) =>
+        i === activeTabIndex && tab.type === 'file' ? { ...tab, content } : tab
+      ));
 
       // Refresh tags after save to pick up new tags
       await refreshTags();
@@ -210,13 +392,122 @@ const App: React.FC = () => {
   };
 
   const handleCreateFile = () => {
-    // TODO: Implement file creation dialog
-    alert('File creation UI coming soon!');
+    setSidebarTab('files');
+    setInlineCreateType('file');
   };
 
   const handleCreateFolder = () => {
-    // TODO: Implement folder creation dialog
-    alert('Folder creation UI coming soon!');
+    setSidebarTab('files');
+    setInlineCreateType('folder');
+  };
+
+  const handleInlineCreate = async (name: string, type: 'file' | 'folder') => {
+    try {
+      if (type === 'file') {
+        const path = `notes/${name}`;
+        const initialContent = `# ${name.replace('.md', '')}\n\n`;
+        await createFile(path, initialContent);
+
+        // Open the new file in a tab
+        setOpenTabs(prev => [...prev, { type: 'file', path, content: initialContent }]);
+        setActiveTabIndex(openTabs.length);
+        setShowSettings(false);
+      } else {
+        const path = `notes/${name}`;
+        await createFolder(path);
+      }
+    } catch (err: any) {
+      console.error('Failed to create:', err);
+    } finally {
+      setInlineCreateType(null);
+    }
+  };
+
+  const handleInlineCancel = () => {
+    setInlineCreateType(null);
+  };
+
+  const handleDeleteFile = async (path: string, type: 'file' | 'folder') => {
+    try {
+      await deleteFile(path);
+
+      // Close the tab if this file was open
+      const tabIndex = openTabs.findIndex(tab => tab.type === 'file' && tab.path === path);
+      if (tabIndex >= 0) {
+        setOpenTabs(prev => prev.filter((_, i) => i !== tabIndex));
+        if (activeTabIndex === tabIndex) {
+          setActiveTabIndex(Math.max(0, tabIndex - 1));
+        } else if (activeTabIndex > tabIndex) {
+          setActiveTabIndex(activeTabIndex - 1);
+        }
+        if (openTabs.length === 1) {
+          setActiveTabIndex(-1);
+        }
+      }
+    } catch (err: any) {
+      console.error('Failed to delete:', err);
+    }
+  };
+
+  const handleQuickCreateFile = async () => {
+    // Generate unique untitled filename
+    let name = 'untitled.md';
+    let counter = 1;
+
+    // Check existing tabs and find a unique name
+    const existingNames = openTabs
+      .filter((tab): tab is Tab & { type: 'file' } => tab.type === 'file')
+      .map(tab => {
+        const parts = tab.path.split('/');
+        return parts[parts.length - 1];
+      });
+
+    while (existingNames.includes(name)) {
+      name = `untitled-${counter}.md`;
+      counter++;
+    }
+
+    const path = `notes/${name}`;
+    const initialContent = `# ${name.replace('.md', '')}\n\n`;
+
+    try {
+      await createFile(path, initialContent);
+      setOpenTabs(prev => [...prev, { type: 'file', path, content: initialContent }]);
+      setActiveTabIndex(openTabs.length);
+      setShowSettings(false);
+    } catch (err: any) {
+      // If file already exists on disk, try next number
+      if (err.message?.includes('exists')) {
+        counter++;
+        name = `untitled-${counter}.md`;
+        const newPath = `notes/${name}`;
+        const newContent = `# ${name.replace('.md', '')}\n\n`;
+        await createFile(newPath, newContent);
+        setOpenTabs(prev => [...prev, { type: 'file', path: newPath, content: newContent }]);
+        setActiveTabIndex(openTabs.length);
+        setShowSettings(false);
+      } else {
+        console.error('Failed to create file:', err);
+      }
+    }
+  };
+
+  const handleCreate = async (name: string) => {
+    if (createDialogType === 'file') {
+      // Create file in notes folder by default
+      const path = `notes/${name}`;
+      const initialContent = `# ${name.replace('.md', '')}\n\n`;
+      await createFile(path, initialContent);
+
+      // Open the new file in a tab
+      setOpenTabs(prev => [...prev, { type: 'file', path, content: initialContent }]);
+      setActiveTabIndex(openTabs.length);
+      setShowSettings(false);
+    } else {
+      // Create folder in notes folder by default
+      const path = `notes/${name}`;
+      await createFolder(path);
+    }
   };
 
   const handleDeleteTag = async (tag: string) => {
@@ -228,9 +519,19 @@ const App: React.FC = () => {
       await refreshFileTree();
       await refreshTags();
 
-      // Return to tags view
-      setSelectedTag(null);
-      setViewMode('editor');
+      // Close the tag tab if open
+      const tagTabIndex = openTabs.findIndex(tab => tab.type === 'tag' && tab.tag === tag);
+      if (tagTabIndex >= 0) {
+        setOpenTabs(prev => prev.filter((_, i) => i !== tagTabIndex));
+        if (activeTabIndex === tagTabIndex) {
+          setActiveTabIndex(Math.max(0, tagTabIndex - 1));
+        } else if (activeTabIndex > tagTabIndex) {
+          setActiveTabIndex(activeTabIndex - 1);
+        }
+        if (openTabs.length === 1) {
+          setActiveTabIndex(-1);
+        }
+      }
     } catch (err: any) {
       throw err; // Re-throw to be handled by TagView
     }
@@ -239,6 +540,33 @@ const App: React.FC = () => {
   const handlePublish = (tag: string) => {
     setPublishTag(tag);
     setPublishDialogOpen(true);
+  };
+
+  const handleUpdateTagContent = async (filePath: string, oldContent: string, newContent: string) => {
+    try {
+      // Read the current file content
+      const fileContent = await readFile(filePath);
+
+      // Replace the old content with the new content
+      const updatedContent = fileContent.replace(oldContent, newContent);
+
+      // Write the updated content back to the file
+      await writeFile(filePath, updatedContent);
+
+      // If this file is currently open in a tab, update its content
+      const tabIndex = openTabs.findIndex(tab => tab.type === 'file' && tab.path === filePath);
+      if (tabIndex !== -1) {
+        setOpenTabs(prev => prev.map((tab, i) =>
+          i === tabIndex && tab.type === 'file' ? { ...tab, content: updatedContent } : tab
+        ));
+        if (tabIndex === activeTabIndex) {
+          setFileContent(updatedContent);
+        }
+      }
+    } catch (err: any) {
+      console.error('Failed to update tag content:', err);
+      throw err;
+    }
   };
 
   if (loading && !fileTree) {
@@ -315,10 +643,14 @@ const App: React.FC = () => {
         />
       )}
 
-      {/* Settings Dialog */}
-      {settingsOpen && (
-        <PublishSettings onClose={() => setSettingsOpen(false)} vaultPath={vaultPath} />
-      )}
+      
+      {/* Create File/Folder Dialog */}
+      <CreateFileDialog
+        isOpen={createDialogOpen}
+        type={createDialogType}
+        onClose={() => setCreateDialogOpen(false)}
+        onCreate={handleCreate}
+      />
 
       {/* Top bar - spans full width */}
       <div className="h-[45px] flex items-center" style={{ backgroundColor: '#f6f6f6', borderBottom: '1px solid #e0e0e0' }}>
@@ -337,17 +669,86 @@ const App: React.FC = () => {
 
         {/* Tab bar in title bar */}
         <div className="flex items-end h-full flex-1" style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}>
-          {selectedFile && (
+          {(openTabs.length > 0 || showSettings) && (
             <div className="flex items-end h-full" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
-              {/* Active tab */}
-              <div className="flex items-center gap-2" style={{ backgroundColor: '#ffffff', borderRight: '1px solid #e0e0e0', borderTop: '1px solid #e0e0e0', borderLeft: '1px solid #e0e0e0', borderBottom: '1px solid #ffffff', marginLeft: sidebarCollapsed ? '15px' : '12px', height: 'calc(100% - 8px)', paddingLeft: '10px', paddingRight: '4px', borderTopLeftRadius: '8px', borderTopRightRadius: '8px', marginBottom: '-1px' }}>
-                <span style={{ fontSize: '13.5px', color: '#4a4a4a', marginRight: '64px' }}>{getFileName(selectedFile)}</span>
-                <button className="p-0.5 rounded transition-colors flex items-center justify-center" style={{ color: '#4a4a4a', backgroundColor: 'transparent' }} title="Close tab">
-                  <X size={16} strokeWidth={2} />
-                </button>
-              </div>
+              {/* All Tabs (file and tag) */}
+              {openTabs.map((tab, index) => {
+                const isActive = index === activeTabIndex && !showSettings;
+                const tabKey = tab.type === 'file' ? tab.path : `tag-${tab.tag}`;
+                const tabLabel = tab.type === 'file' ? getFileName(tab.path) : tab.tag;
+                return (
+                  <div
+                    key={tabKey}
+                    onClick={() => handleTabClick(index)}
+                    className="flex items-center justify-between cursor-pointer"
+                    style={{
+                      backgroundColor: isActive ? '#ffffff' : '#f6f6f6',
+                      border: '1px solid #e0e0e0',
+                      borderBottom: isActive ? '1px solid #ffffff' : 'none',
+                      marginLeft: index === 0 ? (sidebarCollapsed ? '15px' : '12px') : '6px',
+                      height: 'calc(100% - 8px)',
+                      width: '180px',
+                      paddingLeft: '10px',
+                      paddingRight: '6px',
+                      borderTopLeftRadius: '8px',
+                      borderTopRightRadius: '8px',
+                      marginBottom: isActive ? '-1px' : '0'
+                    }}
+                  >
+                    <span className="truncate" style={{ fontSize: '13.5px', color: isActive ? '#4a4a4a' : '#6a6a6a' }}>{tabLabel}</span>
+                    <button
+                      className="p-0.5 rounded transition-colors flex items-center justify-center hover:bg-[#e0e0e0]"
+                      style={{ color: isActive ? '#4a4a4a' : '#6a6a6a', backgroundColor: 'transparent' }}
+                      title="Close tab"
+                      onClick={(e) => handleCloseTab(index, e)}
+                    >
+                      <X size={16} strokeWidth={2} />
+                    </button>
+                  </div>
+                );
+              })}
+              {/* Settings Tab */}
+              {showSettings && (
+                <div
+                  className="flex items-center justify-between cursor-pointer"
+                  style={{
+                    backgroundColor: '#ffffff',
+                    border: '1px solid #e0e0e0',
+                    borderBottom: '1px solid #ffffff',
+                    marginLeft: openTabs.length === 0 ? (sidebarCollapsed ? '15px' : '12px') : '6px',
+                    height: 'calc(100% - 8px)',
+                    width: '180px',
+                    paddingLeft: '10px',
+                    paddingRight: '6px',
+                    borderTopLeftRadius: '8px',
+                    borderTopRightRadius: '8px',
+                    marginBottom: '-1px'
+                  }}
+                >
+                  <span className="flex items-center gap-2" style={{ fontSize: '13.5px', color: '#4a4a4a' }}>
+                    <Settings size={14} strokeWidth={1.5} />
+                    Settings
+                  </span>
+                  <button
+                    className="p-0.5 rounded transition-colors flex items-center justify-center hover:bg-[#e0e0e0]"
+                    style={{ color: '#4a4a4a', backgroundColor: 'transparent' }}
+                    title="Close settings"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowSettings(false);
+                    }}
+                  >
+                    <X size={16} strokeWidth={2} />
+                  </button>
+                </div>
+              )}
               {/* New tab button */}
-              <button className="h-full transition-colors flex items-center justify-center" style={{ color: '#808080', backgroundColor: 'transparent', paddingLeft: '12px', paddingRight: '8px' }} title="New tab">
+              <button
+                className="h-full transition-colors flex items-center justify-center hover:bg-[#e8e8e8]"
+                style={{ color: '#808080', backgroundColor: 'transparent', paddingLeft: '12px', paddingRight: '8px' }}
+                title="New note"
+                onClick={handleQuickCreateFile}
+              >
                 <Plus size={18} strokeWidth={1.5} style={{ marginTop: '2px' }} />
               </button>
             </div>
@@ -367,11 +768,14 @@ const App: React.FC = () => {
         {/* Far-left Icon Sidebar */}
         <div className="w-[44px] min-w-[44px] flex-shrink-0 flex flex-col items-center" style={{ backgroundColor: '#f6f6f6', borderRight: '1px solid #e0e0e0', paddingTop: '16px' }}>
           {/* Top icons */}
-          <button className="p-2 hover:bg-[#e8e8e8] rounded transition-colors" style={{ color: '#737373', backgroundColor: 'transparent', marginBottom: '8px' }} title="Calendar" onClick={() => setSidebarTab('daily')}>
+          {/* <button className="p-2 hover:bg-[#e8e8e8] rounded transition-colors" style={{ color: '#737373', backgroundColor: 'transparent', marginBottom: '8px' }} title="Daily Notes" onClick={() => setSidebarTab('daily')}>
             <Calendar size={20} strokeWidth={1.5} />
-          </button>
-          <button className="p-2 hover:bg-[#e8e8e8] rounded transition-colors" style={{ color: '#737373', backgroundColor: 'transparent', marginBottom: '8px' }} title="Files" onClick={() => setSidebarTab('files')}>
+          </button> */}
+          <button className="p-2 hover:bg-[#e8e8e8] rounded transition-colors" style={{ color: '#737373', backgroundColor: 'transparent', marginBottom: '8px' }} title="Today's Note" onClick={handleOpenTodayNote}>
             <FileText size={20} strokeWidth={1.5} />
+          </button>
+          <button className="p-2 hover:bg-[#e8e8e8] rounded transition-colors" style={{ color: '#737373', backgroundColor: 'transparent', marginBottom: '8px' }} title="File Tree" onClick={() => setSidebarTab('files')}>
+            <FolderTree size={20} strokeWidth={1.5} />
           </button>
           <button className="p-2 hover:bg-[#e8e8e8] rounded transition-colors" style={{ color: '#737373', backgroundColor: 'transparent' }} title="Tags" onClick={() => setSidebarTab('tags')}>
             <Code size={20} strokeWidth={1.5} />
@@ -380,11 +784,11 @@ const App: React.FC = () => {
 
         {/* Left Sidebar - File tree with toolbar */}
         {!sidebarCollapsed && (
-        <div className="flex flex-col relative" style={{ width: `${sidebarWidth}px`, backgroundColor: '#f6f6f6', paddingTop: '16px' }}>
+        <div className="flex flex-col relative" style={{ width: `${sidebarWidth + 1}px`, backgroundColor: '#f6f6f6', paddingTop: '16px' }}>
           {/* Resize handle */}
           <div
-            className="absolute top-0 h-full cursor-col-resize hover:bg-blue-400/50 transition-colors"
-            style={{ right: 0, width: '4px', backgroundColor: isResizing ? 'rgba(96, 165, 250, 0.5)' : 'transparent', borderRight: '1px solid #e0e0e0' }}
+            className="absolute inset-y-0 cursor-col-resize hover:bg-blue-400/50 transition-colors"
+            style={{ right: 0, width: '4px', top: 0, bottom: 0, backgroundColor: isResizing ? 'rgba(96, 165, 250, 0.5)' : 'transparent', borderRight: '1px solid #e0e0e0' }}
             onMouseDown={handleResizeStart}
           />
           {/* Sidebar toolbar */}
@@ -408,7 +812,14 @@ const App: React.FC = () => {
                 existingDates={dailyNoteDates}
               />
             ) : sidebarTab === 'files' ? (
-              <FileTree tree={fileTree} onFileClick={handleFileClick} />
+              <FileTree
+                tree={fileTree}
+                onFileClick={handleFileClick}
+                onDelete={handleDeleteFile}
+                inlineCreateType={inlineCreateType}
+                onInlineCreate={handleInlineCreate}
+                onInlineCancel={handleInlineCancel}
+              />
             ) : (
               <TagBrowser
                 tags={tags}
@@ -431,7 +842,7 @@ const App: React.FC = () => {
               {/* <button className="p-1.5 hover:bg-[#e8e8e8] rounded transition-colors" style={{ color: '#737373', backgroundColor: 'transparent' }} title="Help">
                 <HelpCircle size={16} strokeWidth={1.5} />
               </button> */}
-              <button className="p-1.5 hover:bg-[#e8e8e8] rounded transition-colors" style={{ color: '#737373', backgroundColor: 'transparent', marginRight: '8px' }} title="Settings" onClick={() => setSettingsOpen(true)}>
+              <button className="p-1.5 hover:bg-[#e8e8e8] rounded transition-colors" style={{ color: '#737373', backgroundColor: 'transparent', marginRight: '8px' }} title="Settings" onClick={() => setShowSettings(true)}>
                 <Settings size={18} strokeWidth={1.5} />
               </button>
             </div>
@@ -442,23 +853,37 @@ const App: React.FC = () => {
         {/* Main content area */}
         <div className="flex-1 flex flex-col bg-white">
 
-        {viewMode === 'editor' && selectedFile ? (
+        {showSettings ? (
+          <SettingsPage vaultPath={vaultPath} />
+        ) : activeFileTab ? (
           <>
             {/* Navigation bar with breadcrumb */}
             <div className="flex items-center px-3 relative" style={{ paddingTop: '10px', paddingBottom: '10px' }}>
               {/* Left side - arrow buttons */}
-              {/* <div className="flex items-center gap-2">
-                <button className="p-1 rounded transition-colors" style={{ color: '#737373', backgroundColor: 'transparent' }} title="Back">
+              <div className="flex items-center gap-2">
+                <button
+                  className={`p-1 rounded transition-colors ${canGoBack ? 'hover:bg-[#e8e8e8]' : 'opacity-40 cursor-default'}`}
+                  style={{ color: '#737373', backgroundColor: 'transparent' }}
+                  title="Back"
+                  onClick={goBack}
+                  disabled={!canGoBack}
+                >
                   <ArrowLeft size={18} strokeWidth={1.5} />
                 </button>
-                <button className="p-1 rounded transition-colors" style={{ color: '#737373', backgroundColor: 'transparent' }} title="Forward">
+                <button
+                  className={`p-1 rounded transition-colors ${canGoForward ? 'hover:bg-[#e8e8e8]' : 'opacity-40 cursor-default'}`}
+                  style={{ color: '#737373', backgroundColor: 'transparent' }}
+                  title="Forward"
+                  onClick={goForward}
+                  disabled={!canGoForward}
+                >
                   <ArrowRight size={18} strokeWidth={1.5} />
                 </button>
-              </div> */}
+              </div>
 
               {/* Center - breadcrumbs */}
               <div className="absolute left-1/2 transform -translate-x-1/2">
-                <Breadcrumb path={selectedFile} />
+                <Breadcrumb path={selectedFile!} />
               </div>
 
               {/* Right side - view mode icon */}
@@ -468,14 +893,15 @@ const App: React.FC = () => {
                   style={{ color: '#737373', backgroundColor: 'transparent' }}
                   title={`View mode: ${editorViewMode}`}
                   onClick={() => {
-                    const modes: EditorViewMode[] = ['edit', 'split', 'preview'];
+                    const modes: EditorViewMode[] = ['markdown', 'editor', 'split', 'preview'];
                     const currentIndex = modes.indexOf(editorViewMode);
-                    setEditorViewMode(modes[(currentIndex + 1) % 3]);
+                    setEditorViewMode(modes[(currentIndex + 1) % 4]);
                   }}
                 >
-                  {editorViewMode === 'edit' && <Pencil size={18} strokeWidth={1.5} />}
+                  {editorViewMode === 'markdown' && <Hash size={18} strokeWidth={1.5} />}
+                  {editorViewMode === 'editor' && <Pencil size={18} strokeWidth={1.5} />}
                   {editorViewMode === 'split' && <Columns size={18} strokeWidth={1.5} />}
-                  {editorViewMode === 'preview' && <BookOpen size={18} strokeWidth={1.5} />}
+                  {editorViewMode === 'preview' && <Eye size={18} strokeWidth={1.5} />}
                 </button>
                 {/* <button className="p-1 rounded transition-colors" style={{ color: '#737373', backgroundColor: 'transparent' }} title="More options">
                   <MoreHorizontal size={18} strokeWidth={1.5} />
@@ -485,13 +911,23 @@ const App: React.FC = () => {
 
             {/* Markdown Editor */}
             <div className="flex-1 overflow-hidden">
-              <MarkdownEditor
-                key={selectedFile}
-                initialContent={fileContent}
-                filePath={selectedFile}
-                onSave={handleSave}
-                viewMode={editorViewMode}
-              />
+              {editorViewMode === 'editor' ? (
+                <LiveMarkdownEditor
+                  key={selectedFile}
+                  initialContent={fileContent}
+                  filePath={selectedFile!}
+                  onSave={handleSave}
+                  onTagClick={handleEditorTagClick}
+                />
+              ) : (
+                <MarkdownEditor
+                  key={selectedFile}
+                  initialContent={fileContent}
+                  filePath={selectedFile!}
+                  onSave={handleSave}
+                  viewMode={editorViewMode}
+                />
+              )}
             </div>
 
             {/* Status bar - matching Obsidian layout */}
@@ -509,12 +945,17 @@ const App: React.FC = () => {
               </div>
             </div>
           </>
-        ) : viewMode === 'tag-view' && selectedTag ? (
+        ) : activeTagTab ? (
           <TagView
-            tag={selectedTag}
+            tag={activeTagTab.tag}
             getContent={getTagContent}
             onDeleteTag={handleDeleteTag}
             onPublish={handlePublish}
+            onUpdateContent={handleUpdateTagContent}
+            canGoBack={canGoBack}
+            canGoForward={canGoForward}
+            goBack={goBack}
+            goForward={goForward}
           />
         ) : (
           <div className="flex-1 flex items-center justify-center">

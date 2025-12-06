@@ -8,7 +8,7 @@ interface MarkdownEditorProps {
   initialContent: string;
   filePath: string;
   onSave: (content: string) => Promise<void>;
-  viewMode: 'edit' | 'preview' | 'split';
+  viewMode: 'markdown' | 'editor' | 'preview' | 'split';
 }
 
 export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
@@ -22,6 +22,10 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // For live editor mode - show preview after delay
+  const [showLivePreview, setShowLivePreview] = useState(true);
+  const livePreviewTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Update content when file changes
   useEffect(() => {
@@ -64,6 +68,27 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
 
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setContent(e.target.value);
+
+    // In editor mode, hide preview while typing
+    if (viewMode === 'editor') {
+      setShowLivePreview(false);
+
+      // Clear existing timer
+      if (livePreviewTimerRef.current) {
+        clearTimeout(livePreviewTimerRef.current);
+      }
+
+      // Show preview after 1.5 seconds of no typing
+      livePreviewTimerRef.current = setTimeout(() => {
+        setShowLivePreview(true);
+      }, 1500);
+    }
+  };
+
+  const handleEditorFocus = () => {
+    if (viewMode === 'editor') {
+      setShowLivePreview(false);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -88,51 +113,114 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
     }
   };
 
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (livePreviewTimerRef.current) {
+        clearTimeout(livePreviewTimerRef.current);
+      }
+    };
+  }, []);
+
+  // Click on preview in editor mode to edit
+  const handlePreviewClick = () => {
+    if (viewMode === 'editor') {
+      setShowLivePreview(false);
+      setTimeout(() => {
+        textareaRef.current?.focus();
+      }, 0);
+    }
+  };
+
+  const renderPreview = (padding: string) => (
+    <div className="prose prose-sm max-w-none" style={{ overflow: 'hidden', padding }}>
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        rehypePlugins={[rehypeRaw, rehypeSanitize]}
+        components={{
+          h1: ({ children }) => <h1 style={{ marginLeft: 0, paddingLeft: 0 }}>{children}</h1>,
+          h2: ({ children }) => <h2 style={{ marginLeft: 0, paddingLeft: 0 }}>{children}</h2>,
+          p: ({ children }) => <p style={{ marginLeft: 0, paddingLeft: 0 }}>{children}</p>,
+        }}
+      >
+        {content}
+      </ReactMarkdown>
+    </div>
+  );
+
   return (
     <div className="flex flex-col h-full bg-obsidian-bg">
       {/* Editor and Preview */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Editor */}
-        {(viewMode === 'edit' || viewMode === 'split') && (
-          <div
-            className={`${
-              viewMode === 'split' ? 'w-1/2' : 'w-full'
-            } flex flex-col`}
-          >
+        {/* Markdown mode - raw text editor */}
+        {viewMode === 'markdown' && (
+          <div className="w-full flex flex-col">
             <textarea
               ref={textareaRef}
               value={content}
               onChange={handleContentChange}
               onKeyDown={handleKeyDown}
               className="flex-1 w-full font-mono text-sm resize-none focus:outline-none bg-obsidian-bg text-obsidian-text placeholder-obsidian-text-muted leading-relaxed"
-              style={{ padding: viewMode === 'edit' ? '40px 24px 24px 48px' : '24px' }}
+              style={{ padding: '40px 24px 24px 48px' }}
               placeholder="Start writing..."
               spellCheck={false}
             />
           </div>
         )}
 
-        {/* Preview */}
-        {(viewMode === 'preview' || viewMode === 'split') && (
-          <div
-            className={`${
-              viewMode === 'split' ? 'w-1/2' : 'w-full'
-            } overflow-auto bg-obsidian-bg`}
-            style={{ padding: `10px 24px 24px ${viewMode === 'preview' ? '45px' : '90px'}` }}
-          >
-            <div className="prose prose-sm max-w-none" style={{ overflow: 'hidden' }}>
-              <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
-                rehypePlugins={[rehypeRaw, rehypeSanitize]}
-                components={{
-                  h1: ({ children }) => <h1 style={{ marginLeft: 0, paddingLeft: 0 }}>{children}</h1>,
-                  h2: ({ children }) => <h2 style={{ marginLeft: 0, paddingLeft: 0 }}>{children}</h2>,
-                  p: ({ children }) => <p style={{ marginLeft: 0, paddingLeft: 0 }}>{children}</p>,
-                }}
+        {/* Editor mode - WYSIWYG-style with delayed rendering */}
+        {viewMode === 'editor' && (
+          <div className="w-full flex flex-col relative">
+            {showLivePreview ? (
+              <div
+                className="flex-1 overflow-auto bg-obsidian-bg cursor-text"
+                style={{ padding: '10px 24px 24px 45px' }}
+                onClick={handlePreviewClick}
               >
-                {content}
-              </ReactMarkdown>
+                {renderPreview('0')}
+              </div>
+            ) : (
+              <textarea
+                ref={textareaRef}
+                value={content}
+                onChange={handleContentChange}
+                onKeyDown={handleKeyDown}
+                onFocus={handleEditorFocus}
+                className="flex-1 w-full font-mono text-sm resize-none focus:outline-none bg-obsidian-bg text-obsidian-text placeholder-obsidian-text-muted leading-relaxed"
+                style={{ padding: '40px 24px 24px 48px' }}
+                placeholder="Start writing..."
+                spellCheck={false}
+                autoFocus
+              />
+            )}
+          </div>
+        )}
+
+        {/* Split mode */}
+        {viewMode === 'split' && (
+          <>
+            <div className="w-1/2 flex flex-col">
+              <textarea
+                ref={textareaRef}
+                value={content}
+                onChange={handleContentChange}
+                onKeyDown={handleKeyDown}
+                className="flex-1 w-full font-mono text-sm resize-none focus:outline-none bg-obsidian-bg text-obsidian-text placeholder-obsidian-text-muted leading-relaxed"
+                style={{ padding: '24px' }}
+                placeholder="Start writing..."
+                spellCheck={false}
+              />
             </div>
+            <div className="w-1/2 overflow-auto bg-obsidian-bg" style={{ padding: '10px 24px 24px 90px' }}>
+              {renderPreview('0')}
+            </div>
+          </>
+        )}
+
+        {/* Preview mode - read only */}
+        {viewMode === 'preview' && (
+          <div className="w-full overflow-auto bg-obsidian-bg" style={{ padding: '10px 24px 24px 45px' }}>
+            {renderPreview('0')}
           </div>
         )}
       </div>

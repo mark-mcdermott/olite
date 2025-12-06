@@ -5,7 +5,7 @@ alwaysApply: false
 # Architecture Guidelines
 
 ## Purpose
-Defines architectural patterns, design principles, and structural decisions for building maintainable, testable code in Olite.
+Defines architectural patterns, design principles, and structural decisions for building maintainable, testable code in Xun.
 
 ## Core Principles
 - **MUST** rules are enforced by linting/CI; **SHOULD** rules are strongly recommended.

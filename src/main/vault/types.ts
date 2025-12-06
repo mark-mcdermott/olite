@@ -37,5 +37,5 @@ export const DEFAULT_VAULT_STRUCTURE: VaultStructure = {
   root: '',
   dailyNotes: 'daily-notes',
   notes: 'notes',
-  config: '.olite'
+  config: '.xun'
 };

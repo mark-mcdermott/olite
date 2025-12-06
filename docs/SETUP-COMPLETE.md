@@ -1,12 +1,12 @@
-# Olite Setup Complete! ✅
+# Xun Setup Complete! ✅
 
 ## What's Been Built
 
-The Olite Electron + Vite + React + TypeScript project structure is now complete and tested!
+The Xun Electron + Vite + React + TypeScript project structure is now complete and tested!
 
 ### ✅ Project Structure
 ```
-olite/
+xun/
 ├── src/
 │   ├── main/              # Electron main process (window management, IPC handlers)
 │   │   ├── index.ts       # Main entry point
@@ -146,7 +146,7 @@ Now that the foundation is complete, here's the recommended development order:
 4. **Testing**: Write unit tests for utilities and hooks, component tests for React components, and E2E tests for full workflows.
 
 5. **LLM Context**: The `docs/llm/` directory contains comprehensive guidelines for AI assistants. Always refer to:
-   - `docs/llm/context/olite-overview.md` for project vision
+   - `docs/llm/context/xun-overview.md` for project vision
    - `docs/llm/rules/javascript.md` for coding standards
    - `docs/llm/rules/architecture.md` for design patterns
 

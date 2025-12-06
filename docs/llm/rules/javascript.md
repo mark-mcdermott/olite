@@ -5,11 +5,11 @@ alwaysApply: false
 # JavaScript and TypeScript Guidelines
 
 ## Purpose
-Defines JavaScript/TypeScript coding standards, React patterns, and Electron-specific best practices for Olite.
+Defines JavaScript/TypeScript coding standards, React patterns, and Electron-specific best practices for Xun.
 
 ## Application Context
 
-Olite is an Electron desktop application using:
+Xun is an Electron desktop application using:
 - TypeScript with strict mode
 - React 18+ with functional components only
 - Electron IPC for main/renderer communication

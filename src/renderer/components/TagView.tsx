@@ -3,6 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize from 'rehype-sanitize';
+import { Trash2, Rocket, ArrowLeft, ArrowRight, Pencil, Eye } from 'lucide-react';
 
 interface TaggedContent {
   date: string;
@@ -15,13 +16,31 @@ interface TagViewProps {
   getContent: (tag: string) => Promise<TaggedContent[]>;
   onDeleteTag?: (tag: string) => Promise<void>;
   onPublish?: (tag: string) => void;
+  onUpdateContent?: (filePath: string, oldContent: string, newContent: string) => Promise<void>;
+  canGoBack?: boolean;
+  canGoForward?: boolean;
+  goBack?: () => void;
+  goForward?: () => void;
 }
 
-export const TagView: React.FC<TagViewProps> = ({ tag, getContent, onDeleteTag, onPublish }) => {
+export const TagView: React.FC<TagViewProps> = ({ tag, getContent, onDeleteTag, onPublish, onUpdateContent, canGoBack, canGoForward, goBack, goForward }) => {
   const [content, setContent] = useState<TaggedContent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editedContent, setEditedContent] = useState<Record<number, string>>({});
+
+  // Handle escape key to close modal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && showDeleteConfirm) {
+        setShowDeleteConfirm(false);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [showDeleteConfirm]);
 
   useEffect(() => {
     const loadContent = async () => {
@@ -73,9 +92,33 @@ export const TagView: React.FC<TagViewProps> = ({ tag, getContent, onDeleteTag, 
   }
 
   return (
-    <div className="h-full overflow-auto bg-obsidian-bg">
+    <div className="h-full flex flex-col bg-white">
+      {/* Navigation bar */}
+      <div className="flex-shrink-0 flex items-center px-3" style={{ paddingTop: '10px', paddingBottom: '10px' }}>
+        <div className="flex items-center gap-2">
+          <button
+            className={`p-1 rounded transition-colors ${canGoBack ? 'hover:bg-[#e8e8e8]' : 'opacity-40 cursor-default'}`}
+            style={{ color: '#737373', backgroundColor: 'transparent' }}
+            title="Back"
+            onClick={goBack}
+            disabled={!canGoBack}
+          >
+            <ArrowLeft size={18} strokeWidth={1.5} />
+          </button>
+          <button
+            className={`p-1 rounded transition-colors ${canGoForward ? 'hover:bg-[#e8e8e8]' : 'opacity-40 cursor-default'}`}
+            style={{ color: '#737373', backgroundColor: 'transparent' }}
+            title="Forward"
+            onClick={goForward}
+            disabled={!canGoForward}
+          >
+            <ArrowRight size={18} strokeWidth={1.5} />
+          </button>
+        </div>
+      </div>
+
       {/* Header */}
-      <div className="sticky top-0 bg-obsidian-bg-secondary border-b border-obsidian-border px-6 py-4 z-10">
+      <div className="flex-shrink-0 pr-6 pb-4" style={{ paddingLeft: '36px' }}>
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-xl font-semibold text-obsidian-text flex items-center gap-2">
@@ -87,26 +130,37 @@ export const TagView: React.FC<TagViewProps> = ({ tag, getContent, onDeleteTag, 
             </p>
           </div>
           <div className="flex gap-2">
+            <button
+              onClick={() => setIsEditMode(!isEditMode)}
+              className="p-2 transition-colors"
+              style={{ color: '#737373', backgroundColor: 'transparent', borderRadius: '6px' }}
+              title={isEditMode ? "Preview mode" : "Edit mode"}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#e8e8e8'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+            >
+              {isEditMode ? <Pencil size={18} strokeWidth={1.5} /> : <Eye size={18} strokeWidth={1.5} />}
+            </button>
             {onDeleteTag && (
               <button
                 onClick={() => setShowDeleteConfirm(true)}
-                className="px-3 py-1.5 text-sm bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors flex items-center gap-2"
+                className="p-2 transition-colors"
+                style={{ color: '#ef4444', backgroundColor: 'transparent', borderRadius: '6px' }}
                 title="Delete all content with this tag"
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#fecaca'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-                Delete
+                <Trash2 size={18} strokeWidth={1.5} />
               </button>
             )}
             <button
               onClick={() => onPublish?.(tag)}
-              className="px-3 py-1.5 text-sm bg-accent text-white rounded-lg hover:bg-accent-dark transition-colors flex items-center gap-2"
+              className="p-2 transition-colors"
+              style={{ color: '#737373', backgroundColor: 'transparent', borderRadius: '6px', marginRight: '16px' }}
+              title="Publish"
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#e8e8e8'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-              </svg>
-              Publish
+              <Rocket size={18} strokeWidth={1.5} />
             </button>
           </div>
         </div>
@@ -114,20 +168,46 @@ export const TagView: React.FC<TagViewProps> = ({ tag, getContent, onDeleteTag, 
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm">
-          <div className="bg-obsidian-bg-secondary rounded-xl p-6 max-w-md w-full mx-4 border border-obsidian-border">
-            <h2 className="text-lg font-semibold text-obsidian-text mb-2">Delete Tag Content?</h2>
-            <p className="text-obsidian-text-secondary mb-4">
-              This will permanently delete all content tagged with <strong className="text-accent">{tag}</strong> from your notes.
+        <div
+          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(246, 246, 246, 0.25)', zIndex: 9999 }}
+          onClick={() => setShowDeleteConfirm(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: '360px',
+              backgroundColor: '#ffffff',
+              border: '1px solid #e5e7eb',
+              boxShadow: '0 25px 50px -12px rgb(0 0 0 / 0.25)',
+              padding: '24px',
+              borderRadius: '12px'
+            }}
+          >
+            <h2 className="font-semibold mb-2" style={{ fontSize: '18px', color: '#18181b' }}>Delete Tag Content?</h2>
+            <p className="mb-4" style={{ fontSize: '14px', color: '#71717a', lineHeight: '1.5' }}>
+              This will permanently delete all content tagged with <strong style={{ color: '#3b82f6' }}>{tag}</strong> from your notes.
               This action cannot be undone.
             </p>
-            <p className="text-sm text-obsidian-text-muted mb-6">
+            <p className="mb-6" style={{ fontSize: '13px', color: '#a1a1aa' }}>
               {content.length} {content.length === 1 ? 'section' : 'sections'} will be removed from your files.
             </p>
-            <div className="flex gap-3 justify-end">
+            <div className="flex gap-4 justify-end" style={{ marginTop: '24px' }}>
               <button
                 onClick={() => setShowDeleteConfirm(false)}
-                className="px-4 py-2 text-obsidian-text-secondary hover:bg-obsidian-hover rounded-lg transition-colors"
+                className="transition-colors"
+                style={{
+                  padding: '11px 20px',
+                  fontSize: '14px',
+                  fontWeight: 700,
+                  color: '#52525b',
+                  backgroundColor: '#ffffff',
+                  border: '1px solid #e4e4e7',
+                  borderRadius: '8px',
+                  boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.06)',
+                  marginRight: '8px'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f0f0f2'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#ffffff'}
               >
                 Cancel
               </button>
@@ -142,7 +222,19 @@ export const TagView: React.FC<TagViewProps> = ({ tag, getContent, onDeleteTag, 
                     alert(`Failed to delete tag: ${err.message}`);
                   }
                 }}
-                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                className="transition-colors"
+                style={{
+                  padding: '11px 20px',
+                  fontSize: '14px',
+                  fontWeight: 700,
+                  color: '#ffffff',
+                  backgroundColor: '#ef4444',
+                  border: '1px solid #ef4444',
+                  borderRadius: '8px',
+                  boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.06)'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#dc2626'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#ef4444'}
               >
                 Delete {content.length} {content.length === 1 ? 'Section' : 'Sections'}
               </button>
@@ -151,36 +243,78 @@ export const TagView: React.FC<TagViewProps> = ({ tag, getContent, onDeleteTag, 
         </div>
       )}
 
-      {/* Content sections */}
-      <div className="p-6 space-y-6">
-        {content.map((item, index) => (
-          <div
-            key={`${item.date}-${index}`}
-            className="border-l-2 border-accent/50 pl-5 py-1"
-          >
-            {/* Meta info */}
-            <div className="flex items-center gap-3 mb-3 text-sm">
-              <span className="font-medium text-obsidian-text-secondary">{item.date}</span>
-              <span className="text-obsidian-text-muted">•</span>
-              <span className="text-xs text-obsidian-text-muted">{item.filePath}</span>
-            </div>
+      {/* Scrollable content area */}
+      <div className="flex-1 overflow-auto">
+        <div className="space-y-6" style={{ padding: '24px 24px 24px 36px' }}>
+          {content.map((item, index) => (
+            <div
+              key={`${item.date}-${index}`}
+              className="border-l-2 border-accent/50 py-1"
+              style={{ paddingLeft: '28px' }}
+            >
+              {/* Meta info */}
+              <div className="flex items-center gap-3 mb-3 text-sm">
+                <span className="font-medium text-obsidian-text-secondary">{item.date}</span>
+                <span className="text-obsidian-text-muted">•</span>
+                <span className="text-xs text-obsidian-text-muted">{item.filePath}</span>
+              </div>
 
-            {/* Content */}
-            <div className="prose prose-sm max-w-none">
-              <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
-                rehypePlugins={[rehypeRaw, rehypeSanitize]}
-              >
-                {item.content}
-              </ReactMarkdown>
+              {/* Content */}
+              {isEditMode ? (
+                <textarea
+                  value={editedContent[index] !== undefined ? editedContent[index] : item.content}
+                  onChange={(e) => {
+                    setEditedContent(prev => ({ ...prev, [index]: e.target.value }));
+                  }}
+                  onBlur={async () => {
+                    const newContent = editedContent[index];
+                    if (newContent !== undefined && newContent !== item.content && onUpdateContent) {
+                      try {
+                        await onUpdateContent(item.filePath, item.content, newContent);
+                        // Update the local content state to reflect the save
+                        setContent(prev => prev.map((c, i) => i === index ? { ...c, content: newContent } : c));
+                      } catch (err: any) {
+                        console.error('Failed to save content:', err);
+                      }
+                    }
+                  }}
+                  className="w-full min-h-[100px] p-3 rounded-lg resize-y"
+                  style={{
+                    fontFamily: 'monospace',
+                    fontSize: '14px',
+                    lineHeight: '1.6',
+                    border: '1px solid #e0e0e0',
+                    backgroundColor: '#fafafa',
+                    color: '#1a1a1a'
+                  }}
+                />
+              ) : (
+                <div className="prose prose-sm max-w-none">
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    rehypePlugins={[rehypeRaw, rehypeSanitize]}
+                    components={{
+                      a: ({ href, children }) => (
+                        <a href={href} style={{ color: '#7c3aed', textDecoration: 'underline' }}>
+                          {children}
+                        </a>
+                      )
+                    }}
+                  >
+                    {item.content}
+                  </ReactMarkdown>
+                </div>
+              )}
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
-      {/* Footer note */}
-      <div className="px-6 py-4 text-xs text-obsidian-text-muted text-center border-t border-obsidian-border">
-        Read-only view aggregating all content tagged with {tag}
+      {/* Footer note - fixed bottom right */}
+      <div className="flex-shrink-0 flex justify-end px-4 py-3">
+        <span style={{ fontSize: '12px', color: '#d4d4d4' }}>
+          Read-only view aggregating all content tagged with {tag}
+        </span>
       </div>
     </div>
   );

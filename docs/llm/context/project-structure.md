@@ -3,7 +3,7 @@
 ## Top-Level Layout
 
 ```
-olite/
+xun/
 ├── src/
 │   ├── main/              # Electron main process
 │   │   ├── index.ts       # Main process entry point
@@ -67,7 +67,7 @@ vault/
 ├── daily-notes/           # Auto-generated daily notes
 │   └── YYYY-MM-DD.md
 ├── notes/                 # User-created notes
-└── .olite/                # App metadata
+└── .xun/                  # App metadata
     ├── tags.json          # Tag index
     └── config.json        # User preferences
 ```

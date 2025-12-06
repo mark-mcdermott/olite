@@ -1,10 +1,10 @@
-# Olite
+# Xun
 
 > A lightweight desktop note-taking app for macOS, inspired by Obsidian.
 
-## What is Olite?
+## What is Xun?
 
-Olite (Obsidian Lite) is a streamlined note-taking and journaling application designed for a specific workflow:
+Xun is a streamlined note-taking and journaling application designed for a specific workflow:
 - Daily notes with automatic date-based creation
 - Tag-based content organization (`#project-a`, `#personal`, etc.)
 - Auto-generated tag views that aggregate all content by tag
@@ -46,7 +46,7 @@ This is a personal tool built for a single user, focusing on simplicity and main
 ## Project Structure
 
 ```
-olite/
+xun/
 ├── src/
 │   ├── main/              # Electron main process
 │   ├── renderer/          # React UI

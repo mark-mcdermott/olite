@@ -1,5 +1,5 @@
 {
-  "name": "olite",
+  "name": "xun",
   "version": "0.1.0",
   "description": "A lightweight desktop note-taking app for macOS, inspired by Obsidian.",
   "type": "module",
@@ -52,6 +52,12 @@
     "vite-plugin-electron-renderer": "^0.14.6"
   },
   "dependencies": {
+    "@codemirror/commands": "^6.10.0",
+    "@codemirror/lang-markdown": "^6.5.0",
+    "@codemirror/language": "^6.11.3",
+    "@codemirror/state": "^6.5.2",
+    "@codemirror/view": "^6.38.8",
+    "@lezer/highlight": "^1.2.3",
     "lucide-react": "^0.556.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

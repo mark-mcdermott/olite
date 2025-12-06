@@ -1,11 +1,11 @@
 # LLM Documentation Migration Summary
 
-This document summarizes the changes made to adapt the LLM documentation from a Rails/Vue.js web app (Doximity) to the Olite Electron desktop app.
+This document summarizes the changes made to adapt the LLM documentation from a Rails/Vue.js web app (Doximity) to the Xun Electron desktop app.
 
 ## Files Updated
 
 ### Context Files (`docs/llm/context/`)
-- ✅ **olite-overview.md** - NEW: Comprehensive overview of Olite's vision and features
+- ✅ **xun-overview.md** - NEW: Comprehensive overview of Xun's vision and features
 - ✅ **technology-stack.md** - Updated for Electron/Node/Vite/React stack
 - ✅ **project-structure.md** - Updated for Electron app structure (main/renderer/preload)
 - ✅ **coding-patterns.md** - Updated for React/Electron patterns (IPC, hooks, tag system)
@@ -110,8 +110,8 @@ Now that the LLM documentation is updated, the next phase is to:
 
 ## Notes for Future AI Assistants
 
-When working on Olite:
-1. Always read `docs/llm/context/olite-overview.md` first
+When working on Xun:
+1. Always read `docs/llm/context/xun-overview.md` first
 2. Follow Electron security best practices (context isolation, no nodeIntegration)
 3. All file operations happen in main process via IPC
 4. Use TypeScript with strict mode

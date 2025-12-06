@@ -1,10 +1,10 @@
 # Blog Publishing Setup Guide
 
-The publishing feature is now fully integrated into Olite! Here's how to use it.
+The publishing feature is now fully integrated into Xun! Here's how to use it.
 
 ## Overview
 
-Olite can now publish your tagged content directly to your blog repositories on GitHub, with optional deployment tracking via Cloudflare Pages. The system provides real-time progress tracking as your content is pushed and deployed.
+Xun can now publish your tagged content directly to your blog repositories on GitHub, with optional deployment tracking via Cloudflare Pages. The system provides real-time progress tracking as your content is pushed and deployed.
 
 ## What's Been Built
 
@@ -72,12 +72,12 @@ When you publish a tag, here's what happens:
 1. **Content Preparation** - All content tagged with the selected tag is aggregated from your daily notes
 2. **GitHub Push** - The content is committed and pushed to your blog repository
 3. **Cloudflare Detection** - Cloudflare Pages automatically detects the push and starts building
-4. **Deployment Monitoring** - If configured, Olite polls Cloudflare's API to track build progress
+4. **Deployment Monitoring** - If configured, Xun polls Cloudflare's API to track build progress
 5. **Completion** - You're notified when the deployment is live
 
 ## Security Notes
 
-- All tokens are stored locally in `.olite/publish-config.json` in your vault
+- All tokens are stored locally in `.xun/publish-config.json` in your vault
 - Tokens are never transmitted anywhere except to GitHub and Cloudflare APIs
 - The configuration file is automatically added to `.gitignore`
 

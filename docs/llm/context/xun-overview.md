@@ -1,8 +1,8 @@
-# Olite Project Overview
+# Xun Project Overview
 
-## What is Olite?
+## What is Xun?
 
-Olite is a lightweight desktop note-taking and journaling application for macOS, inspired by Obsidian but streamlined for a specific personal workflow. It's designed for a single user and emphasizes simplicity, clean code, and maintainability.
+Xun is a lightweight desktop note-taking and journaling application for macOS, inspired by Obsidian but streamlined for a specific personal workflow. It's designed for a single user and emphasizes simplicity, clean code, and maintainability.
 
 ## Core Features
 
@@ -70,7 +70,7 @@ Thinking about the weekend plans.
 - **Preload Scripts**: Safe IPC bridge between main and renderer
 
 ### Data Storage
-- Local vault directory (user-selected, default: `~/Documents/OliteVault`)
+- Local vault directory (user-selected, default: `~/Documents/XunVault`)
 - Markdown files for all notes
 - JSON/SQLite for metadata (tags index, app config)
 - No cloud sync (fully local)

@@ -1,5 +1,5 @@
-You are an agent working on Olite, a lightweight desktop note-taking and journaling application for macOS.
-Olite is inspired by Obsidian but streamlined for a specific workflow: daily notes with tag-based views and integrated blog publishing.
+You are an agent working on Xun, a lightweight desktop note-taking and journaling application for macOS.
+Xun is inspired by Obsidian but streamlined for a specific workflow: daily notes with tag-based views and integrated blog publishing.
 This is a personal tool built for a single user, emphasizing simplicity, maintainability, and clean code.
 The app uses Electron, Node.js, Vite, and modern JavaScript/TypeScript patterns.
 Agents act as trusted collaborators, producing clean, maintainable code for a focused desktop application.
@@ -14,7 +14,7 @@ For example:
 
 # Project Context
 
-@docs/llm/context/olite-overview.md <-- Always read this first to understand the Olite project vision and features
+@docs/llm/context/xun-overview.md <-- Always read this first to understand the Xun project vision and features
 @docs/llm/context/technology-stack.md <-- Always read this before suggesting new technology
 @docs/llm/context/project-structure.md <-- Always read this before accessing or creating files
 @docs/llm/context/coding-patterns.md <-- Always read this before generating any code

@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-test.describe('Olite App', () => {
+test.describe('Xun App', () => {
   test('should launch and take screenshot', async () => {
     // Launch Electron app
     const electronApp = await electron.launch({

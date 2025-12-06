@@ -22,8 +22,8 @@ export class VaultManager {
       if (config?.vaultPath) {
         vaultPath = config.vaultPath;
       } else {
-        // Default to ~/Documents/OliteVault
-        vaultPath = join(app.getPath('documents'), 'OliteVault');
+        // Default to ~/Documents/XunVault
+        vaultPath = join(app.getPath('documents'), 'XunVault');
       }
     }
 
@@ -101,8 +101,8 @@ export class VaultManager {
       };
     }
 
-    // Skip .olite directory in tree
-    if (name === '.olite') {
+    // Skip .xun directory in tree
+    if (name === '.xun') {
       return {
         name,
         path: relativePath,
@@ -115,8 +115,8 @@ export class VaultManager {
     const entries = await fs.readdir(dirPath);
 
     for (const entry of entries) {
-      // Skip hidden files except .olite
-      if (entry.startsWith('.') && entry !== '.olite') {
+      // Skip hidden files except .xun
+      if (entry.startsWith('.') && entry !== '.xun') {
         continue;
       }
 

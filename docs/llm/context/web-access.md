@@ -9,8 +9,8 @@
 
 ## File System Access
 
-- **Vault Location:** User-selected directory (default: `~/Documents/OliteVault`)
-- **App Config:** `~/.olite/` or platform-specific config directory
+- **Vault Location:** User-selected directory (default: `~/Documents/XunVault`)
+- **App Config:** `~/.xun/` or platform-specific config directory
 - **Logs:** (TBD - decide on log location)
 
 ## External Services
