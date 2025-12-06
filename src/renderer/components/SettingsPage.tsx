@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, Plus, Trash2, Edit2 } from 'lucide-react';
+import { Button } from './Button';
 
 interface BlogTarget {
   id: string;
@@ -165,14 +166,12 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ vaultPath }) => {
       <div className="flex-1 overflow-y-auto" style={{ padding: '40px 48px' }}>
         <div style={{ maxWidth: '500px' }}>
           {/* Back button */}
-          <button
-            onClick={handleCancel}
-            className="flex items-center gap-1 mb-6 hover:bg-gray-100 px-2 py-1 rounded transition-colors"
-            style={{ color: '#5c5c5c' }}
-          >
-            <ChevronLeft size={18} strokeWidth={1.5} />
-            <span style={{ fontSize: '14px' }}>Back to Settings</span>
-          </button>
+          <div className="mb-6">
+            <Button onClick={handleCancel} variant="secondary" style={{ paddingLeft: '12px' }}>
+              <ChevronLeft size={18} strokeWidth={1.5} style={{ marginRight: '4px' }} />
+              Back to Settings
+            </Button>
+          </div>
 
           <h2 className="font-semibold mb-6" style={{ fontSize: '20px', color: '#1a1a1a' }}>
             {blogs.find(b => b.id === editingBlog.id) ? 'Edit Blog' : 'Add Blog'}
@@ -338,7 +337,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ vaultPath }) => {
             </div>
 
             {/* Content Section */}
-            <div style={{ paddingTop: '16px', borderTop: '1px solid #e0e0e0' }}>
+            <div style={{ marginTop: '40px', paddingTop: '24px', borderTop: '1px solid #e0e0e0' }}>
               <h3 className="tracking-wider mb-2" style={{ fontSize: '15px', fontWeight: 600, color: '#1a1a1a' }}>Content</h3>
 
               <div className="space-y-4">
@@ -383,20 +382,12 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ vaultPath }) => {
 
             {/* Action buttons */}
             <div className="flex justify-end gap-3 pt-6">
-              <button
-                onClick={handleCancel}
-                className="px-4 py-2 rounded transition-colors hover:bg-gray-100"
-                style={{ fontSize: '14px', color: '#5c5c5c', border: '1px solid #e0e0e0' }}
-              >
+              <Button onClick={handleCancel} variant="secondary" style={{ marginRight: '8px' }}>
                 Cancel
-              </button>
-              <button
-                onClick={handleSaveBlog}
-                className="px-4 py-2 rounded transition-colors hover:opacity-90"
-                style={{ fontSize: '14px', color: '#ffffff', backgroundColor: '#737373' }}
-              >
+              </Button>
+              <Button onClick={handleSaveBlog}>
                 Save
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -419,25 +410,10 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ vaultPath }) => {
         <div>
           <div className="flex items-center justify-between" style={{ marginBottom: '20px' }}>
             <h2 className="font-semibold" style={{ fontSize: '16px', color: '#1a1a1a' }}>Blog Configurations</h2>
-            <button
-              onClick={handleAddBlog}
-              className="flex items-center transition-colors duration-150"
-              style={{
-                padding: '11px 20px 11px 14px',
-                fontSize: '14px',
-                fontWeight: 700,
-                color: '#52525b',
-                backgroundColor: '#ffffff',
-                boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.06)',
-                border: '1px solid #e4e4e7',
-                borderRadius: '8px'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f0f0f2'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#ffffff'}
-            >
+            <Button onClick={handleAddBlog} variant="secondary">
               <Plus size={16} strokeWidth={3} style={{ marginRight: '8px' }} />
               Add Blog
-            </button>
+            </Button>
           </div>
 
           {blogs.length === 0 ? (
