@@ -179,7 +179,7 @@ export const PublishSettings: React.FC<PublishSettingsProps> = ({ onClose, vault
                 type="text"
                 value={editingBlog.name}
                 onChange={e => setEditingBlog({ ...editingBlog, name: e.target.value })}
-                className="w-full px-3 py-2 border border-obsidian-border rounded-lg bg-obsidian-surface text-obsidian-text placeholder-obsidian-text-muted focus:border-accent focus:ring-1 focus:ring-accent outline-none"
+                className="w-full px-4 py-3 border border-obsidian-border rounded-lg bg-white text-obsidian-text placeholder-obsidian-text-muted focus:border-accent focus:ring-1 focus:ring-accent outline-none shadow-sm"
                 placeholder="My Blog"
                 required
               />
@@ -201,7 +201,7 @@ export const PublishSettings: React.FC<PublishSettingsProps> = ({ onClose, vault
                       ...editingBlog,
                       github: { ...editingBlog.github, repo: e.target.value }
                     })}
-                    className="w-full px-3 py-2 border border-obsidian-border rounded-lg bg-obsidian-surface text-obsidian-text placeholder-obsidian-text-muted focus:border-accent focus:ring-1 focus:ring-accent outline-none"
+                    className="w-full px-4 py-3 border border-obsidian-border rounded-lg bg-white text-obsidian-text placeholder-obsidian-text-muted focus:border-accent focus:ring-1 focus:ring-accent outline-none shadow-sm"
                     placeholder="username/blog-repo"
                   />
                 </div>
@@ -217,7 +217,7 @@ export const PublishSettings: React.FC<PublishSettingsProps> = ({ onClose, vault
                       ...editingBlog,
                       github: { ...editingBlog.github, branch: e.target.value }
                     })}
-                    className="w-full px-3 py-2 border border-obsidian-border rounded-lg bg-obsidian-surface text-obsidian-text placeholder-obsidian-text-muted focus:border-accent focus:ring-1 focus:ring-accent outline-none"
+                    className="w-full px-4 py-3 border border-obsidian-border rounded-lg bg-white text-obsidian-text placeholder-obsidian-text-muted focus:border-accent focus:ring-1 focus:ring-accent outline-none shadow-sm"
                     placeholder="main"
                   />
                 </div>
@@ -233,7 +233,7 @@ export const PublishSettings: React.FC<PublishSettingsProps> = ({ onClose, vault
                       ...editingBlog,
                       github: { ...editingBlog.github, token: e.target.value }
                     })}
-                    className="w-full px-3 py-2 border border-obsidian-border rounded-lg bg-obsidian-surface text-obsidian-text placeholder-obsidian-text-muted focus:border-accent focus:ring-1 focus:ring-accent outline-none"
+                    className="w-full px-4 py-3 border border-obsidian-border rounded-lg bg-white text-obsidian-text placeholder-obsidian-text-muted focus:border-accent focus:ring-1 focus:ring-accent outline-none shadow-sm"
                     placeholder="ghp_..."
                   />
                 </div>
@@ -263,7 +263,7 @@ export const PublishSettings: React.FC<PublishSettingsProps> = ({ onClose, vault
                         token: editingBlog.cloudflare?.token || ''
                       }
                     })}
-                    className="w-full px-3 py-2 border border-obsidian-border rounded-lg bg-obsidian-surface text-obsidian-text placeholder-obsidian-text-muted focus:border-accent focus:ring-1 focus:ring-accent outline-none"
+                    className="w-full px-4 py-3 border border-obsidian-border rounded-lg bg-white text-obsidian-text placeholder-obsidian-text-muted focus:border-accent focus:ring-1 focus:ring-accent outline-none shadow-sm"
                     placeholder="Your Cloudflare account ID"
                   />
                   <p className="text-xs text-obsidian-text-muted mt-1">
@@ -286,7 +286,7 @@ export const PublishSettings: React.FC<PublishSettingsProps> = ({ onClose, vault
                         token: editingBlog.cloudflare?.token || ''
                       }
                     })}
-                    className="w-full px-3 py-2 border border-obsidian-border rounded-lg bg-obsidian-surface text-obsidian-text placeholder-obsidian-text-muted focus:border-accent focus:ring-1 focus:ring-accent outline-none"
+                    className="w-full px-4 py-3 border border-obsidian-border rounded-lg bg-white text-obsidian-text placeholder-obsidian-text-muted focus:border-accent focus:ring-1 focus:ring-accent outline-none shadow-sm"
                     placeholder="my-blog"
                   />
                   <p className="text-xs text-obsidian-text-muted mt-1">
@@ -309,7 +309,7 @@ export const PublishSettings: React.FC<PublishSettingsProps> = ({ onClose, vault
                         token: e.target.value
                       }
                     })}
-                    className="w-full px-3 py-2 border border-obsidian-border rounded-lg bg-obsidian-surface text-obsidian-text placeholder-obsidian-text-muted focus:border-accent focus:ring-1 focus:ring-accent outline-none"
+                    className="w-full px-4 py-3 border border-obsidian-border rounded-lg bg-white text-obsidian-text placeholder-obsidian-text-muted focus:border-accent focus:ring-1 focus:ring-accent outline-none shadow-sm"
                     placeholder="Your Cloudflare API token"
                   />
                   <p className="text-xs text-obsidian-text-muted mt-1">
@@ -335,7 +335,7 @@ export const PublishSettings: React.FC<PublishSettingsProps> = ({ onClose, vault
                       ...editingBlog,
                       content: { ...editingBlog.content, path: e.target.value }
                     })}
-                    className="w-full px-3 py-2 border border-obsidian-border rounded-lg bg-obsidian-surface text-obsidian-text placeholder-obsidian-text-muted focus:border-accent focus:ring-1 focus:ring-accent outline-none"
+                    className="w-full px-4 py-3 border border-obsidian-border rounded-lg bg-white text-obsidian-text placeholder-obsidian-text-muted focus:border-accent focus:ring-1 focus:ring-accent outline-none shadow-sm"
                     placeholder="src/content/posts/"
                   />
                 </div>
@@ -351,7 +351,7 @@ export const PublishSettings: React.FC<PublishSettingsProps> = ({ onClose, vault
                       ...editingBlog,
                       content: { ...editingBlog.content, filename: e.target.value }
                     })}
-                    className="w-full px-3 py-2 border border-obsidian-border rounded-lg bg-obsidian-surface text-obsidian-text placeholder-obsidian-text-muted focus:border-accent focus:ring-1 focus:ring-accent outline-none"
+                    className="w-full px-4 py-3 border border-obsidian-border rounded-lg bg-white text-obsidian-text placeholder-obsidian-text-muted focus:border-accent focus:ring-1 focus:ring-accent outline-none shadow-sm"
                     placeholder="{tag}.md"
                   />
                   <p className="text-xs text-obsidian-text-muted mt-1">

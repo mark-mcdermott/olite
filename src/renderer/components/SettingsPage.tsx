@@ -163,7 +163,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ vaultPath }) => {
   if (editingBlog) {
     return (
       <div className="flex-1 overflow-y-auto" style={{ padding: '40px 48px' }}>
-        <div className="max-w-2xl">
+        <div style={{ maxWidth: '500px' }}>
           {/* Back button */}
           <button
             onClick={handleCancel}
@@ -181,26 +181,29 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ vaultPath }) => {
           <div className="space-y-6">
             {/* Blog Name */}
             <div>
-              <label className="block mb-1.5" style={{ fontSize: '13px', fontWeight: 500, color: '#5c5c5c' }}>
+              <label className="block" style={{ fontSize: '14px', fontWeight: 600, color: '#404040', marginTop: '20px', marginBottom: '14px' }}>
                 Blog Name <span style={{ color: '#ef4444' }}>*</span>
               </label>
               <input
                 type="text"
                 value={editingBlog.name}
                 onChange={e => setEditingBlog({ ...editingBlog, name: e.target.value })}
-                className="w-full px-3 py-2 rounded"
-                style={{ fontSize: '14px', border: '1px solid #e0e0e0', backgroundColor: '#fafafa', color: '#1a1a1a' }}
+                className="w-full"
+                style={{ padding: '10px 14px', fontSize: '14.5px', border: '1px solid #e4e4e7', backgroundColor: '#ffffff', color: '#1a1a1a', borderRadius: '8px', boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.06)', marginBottom: '0' }}
                 placeholder="My Blog"
               />
             </div>
 
             {/* GitHub Section */}
-            <div style={{ paddingTop: '16px', borderTop: '1px solid #e0e0e0' }}>
-              <h3 className="uppercase tracking-wider mb-4" style={{ fontSize: '12px', fontWeight: 600, color: '#1a1a1a' }}>GitHub</h3>
+            <div style={{ marginTop: '40px', paddingTop: '24px', borderTop: '1px solid #e0e0e0' }}>
+              <h3 className="tracking-wider mb-0" style={{ fontSize: '15px', fontWeight: 600, color: '#1a1a1a' }}>GitHub</h3>
+              <p style={{ fontSize: '14.5px', color: '#777777', marginTop: '-2px', marginBottom: '24px' }}>
+                From your GitHub repo settings:
+              </p>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block mb-1.5" style={{ fontSize: '13px', fontWeight: 500, color: '#5c5c5c' }}>
+                  <label className="block" style={{ fontSize: '14px', fontWeight: 600, color: '#404040', marginTop: '20px', marginBottom: '14px' }}>
                     Repository (username/repo) <span style={{ color: '#ef4444' }}>*</span>
                   </label>
                   <input
@@ -210,14 +213,14 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ vaultPath }) => {
                       ...editingBlog,
                       github: { ...editingBlog.github, repo: e.target.value }
                     })}
-                    className="w-full px-3 py-2 rounded"
-                    style={{ fontSize: '14px', border: '1px solid #e0e0e0', backgroundColor: '#fafafa', color: '#1a1a1a' }}
+                    className="w-full"
+                    style={{ padding: '10px 14px', fontSize: '14.5px', border: '1px solid #e4e4e7', backgroundColor: '#ffffff', color: '#1a1a1a', borderRadius: '8px', boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.06)', marginBottom: '0' }}
                     placeholder="username/blog-repo"
                   />
                 </div>
 
                 <div>
-                  <label className="block mb-1.5" style={{ fontSize: '13px', fontWeight: 500, color: '#5c5c5c' }}>
+                  <label className="block" style={{ fontSize: '14px', fontWeight: 600, color: '#404040', marginTop: '20px', marginBottom: '14px' }}>
                     Branch <span style={{ color: '#ef4444' }}>*</span>
                   </label>
                   <input
@@ -227,14 +230,14 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ vaultPath }) => {
                       ...editingBlog,
                       github: { ...editingBlog.github, branch: e.target.value }
                     })}
-                    className="w-full px-3 py-2 rounded"
-                    style={{ fontSize: '14px', border: '1px solid #e0e0e0', backgroundColor: '#fafafa', color: '#1a1a1a' }}
+                    className="w-full"
+                    style={{ padding: '10px 14px', fontSize: '14.5px', border: '1px solid #e4e4e7', backgroundColor: '#ffffff', color: '#1a1a1a', borderRadius: '8px', boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.06)', marginBottom: '0' }}
                     placeholder="main"
                   />
                 </div>
 
                 <div>
-                  <label className="block mb-1.5" style={{ fontSize: '13px', fontWeight: 500, color: '#5c5c5c' }}>
+                  <label className="block" style={{ fontSize: '14px', fontWeight: 600, color: '#404040', marginTop: '20px', marginBottom: '14px' }}>
                     Personal Access Token <span style={{ color: '#ef4444' }}>*</span>
                   </label>
                   <input
@@ -244,8 +247,8 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ vaultPath }) => {
                       ...editingBlog,
                       github: { ...editingBlog.github, token: e.target.value }
                     })}
-                    className="w-full px-3 py-2 rounded"
-                    style={{ fontSize: '14px', border: '1px solid #e0e0e0', backgroundColor: '#fafafa', color: '#1a1a1a' }}
+                    className="w-full"
+                    style={{ padding: '10px 14px', fontSize: '14.5px', border: '1px solid #e4e4e7', backgroundColor: '#ffffff', color: '#1a1a1a', borderRadius: '8px', boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.06)', marginBottom: '0' }}
                     placeholder="ghp_..."
                   />
                 </div>
@@ -253,15 +256,15 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ vaultPath }) => {
             </div>
 
             {/* Cloudflare Section */}
-            <div style={{ paddingTop: '16px', borderTop: '1px solid #e0e0e0' }}>
-              <h3 className="uppercase tracking-wider mb-1" style={{ fontSize: '12px', fontWeight: 600, color: '#1a1a1a' }}>Cloudflare Pages</h3>
-              <p className="mb-4" style={{ fontSize: '12px', color: '#999999' }}>
+            <div style={{ marginTop: '40px', paddingTop: '24px', borderTop: '1px solid #e0e0e0' }}>
+              <h3 className="tracking-wider mb-0" style={{ fontSize: '15px', fontWeight: 600, color: '#1a1a1a' }}>Cloudflare Pages</h3>
+              <p style={{ fontSize: '14.5px', color: '#777777', marginTop: '-2px', marginBottom: '24px' }}>
                 Optional: Add these to track deployment status
               </p>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block mb-1.5" style={{ fontSize: '13px', fontWeight: 500, color: '#5c5c5c' }}>
+                  <label className="block" style={{ fontSize: '14px', fontWeight: 600, color: '#404040', marginTop: '20px', marginBottom: '14px' }}>
                     Account ID
                   </label>
                   <input
@@ -275,17 +278,17 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ vaultPath }) => {
                         token: editingBlog.cloudflare?.token || ''
                       }
                     })}
-                    className="w-full px-3 py-2 rounded"
-                    style={{ fontSize: '14px', border: '1px solid #e0e0e0', backgroundColor: '#fafafa', color: '#1a1a1a' }}
+                    className="w-full"
+                    style={{ padding: '10px 14px', fontSize: '14.5px', border: '1px solid #e4e4e7', backgroundColor: '#ffffff', color: '#1a1a1a', borderRadius: '8px', boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.06)', marginBottom: '0' }}
                     placeholder="Your Cloudflare account ID"
                   />
-                  <p className="mt-1" style={{ fontSize: '11px', color: '#999999' }}>
+                  <p style={{ fontSize: '11px', color: '#999999', marginTop: '2px' }}>
                     Found in Cloudflare dashboard URL or Workers & Pages → Overview
                   </p>
                 </div>
 
                 <div>
-                  <label className="block mb-1.5" style={{ fontSize: '13px', fontWeight: 500, color: '#5c5c5c' }}>
+                  <label className="block" style={{ fontSize: '14px', fontWeight: 600, color: '#404040', marginTop: '20px', marginBottom: '14px' }}>
                     Project Name
                   </label>
                   <input
@@ -299,17 +302,17 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ vaultPath }) => {
                         token: editingBlog.cloudflare?.token || ''
                       }
                     })}
-                    className="w-full px-3 py-2 rounded"
-                    style={{ fontSize: '14px', border: '1px solid #e0e0e0', backgroundColor: '#fafafa', color: '#1a1a1a' }}
+                    className="w-full"
+                    style={{ padding: '10px 14px', fontSize: '14.5px', border: '1px solid #e4e4e7', backgroundColor: '#ffffff', color: '#1a1a1a', borderRadius: '8px', boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.06)', marginBottom: '0' }}
                     placeholder="my-blog"
                   />
-                  <p className="mt-1" style={{ fontSize: '11px', color: '#999999' }}>
+                  <p style={{ fontSize: '11px', color: '#999999', marginTop: '2px' }}>
                     The name of your Pages project (not the domain)
                   </p>
                 </div>
 
                 <div>
-                  <label className="block mb-1.5" style={{ fontSize: '13px', fontWeight: 500, color: '#5c5c5c' }}>
+                  <label className="block" style={{ fontSize: '14px', fontWeight: 600, color: '#404040', marginTop: '20px', marginBottom: '14px' }}>
                     API Token
                   </label>
                   <input
@@ -323,11 +326,11 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ vaultPath }) => {
                         token: e.target.value
                       }
                     })}
-                    className="w-full px-3 py-2 rounded"
-                    style={{ fontSize: '14px', border: '1px solid #e0e0e0', backgroundColor: '#fafafa', color: '#1a1a1a' }}
+                    className="w-full"
+                    style={{ padding: '10px 14px', fontSize: '14.5px', border: '1px solid #e4e4e7', backgroundColor: '#ffffff', color: '#1a1a1a', borderRadius: '8px', boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.06)', marginBottom: '0' }}
                     placeholder="Your Cloudflare API token"
                   />
-                  <p className="mt-1" style={{ fontSize: '11px', color: '#999999' }}>
+                  <p style={{ fontSize: '11px', color: '#999999', marginTop: '2px' }}>
                     Create at: dash.cloudflare.com → My Profile → API Tokens
                   </p>
                 </div>
@@ -336,11 +339,11 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ vaultPath }) => {
 
             {/* Content Section */}
             <div style={{ paddingTop: '16px', borderTop: '1px solid #e0e0e0' }}>
-              <h3 className="uppercase tracking-wider mb-4" style={{ fontSize: '12px', fontWeight: 600, color: '#1a1a1a' }}>Content</h3>
+              <h3 className="tracking-wider mb-2" style={{ fontSize: '15px', fontWeight: 600, color: '#1a1a1a' }}>Content</h3>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block mb-1.5" style={{ fontSize: '13px', fontWeight: 500, color: '#5c5c5c' }}>
+                  <label className="block" style={{ fontSize: '14px', fontWeight: 600, color: '#404040', marginTop: '20px', marginBottom: '14px' }}>
                     Content Path <span style={{ color: '#ef4444' }}>*</span>
                   </label>
                   <input
@@ -350,14 +353,14 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ vaultPath }) => {
                       ...editingBlog,
                       content: { ...editingBlog.content, path: e.target.value }
                     })}
-                    className="w-full px-3 py-2 rounded"
-                    style={{ fontSize: '14px', border: '1px solid #e0e0e0', backgroundColor: '#fafafa', color: '#1a1a1a' }}
+                    className="w-full"
+                    style={{ padding: '10px 14px', fontSize: '14.5px', border: '1px solid #e4e4e7', backgroundColor: '#ffffff', color: '#1a1a1a', borderRadius: '8px', boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.06)', marginBottom: '0' }}
                     placeholder="src/content/posts/"
                   />
                 </div>
 
                 <div>
-                  <label className="block mb-1.5" style={{ fontSize: '13px', fontWeight: 500, color: '#5c5c5c' }}>
+                  <label className="block" style={{ fontSize: '14px', fontWeight: 600, color: '#404040', marginTop: '20px', marginBottom: '14px' }}>
                     Filename Template <span style={{ color: '#ef4444' }}>*</span>
                   </label>
                   <input
@@ -367,11 +370,11 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ vaultPath }) => {
                       ...editingBlog,
                       content: { ...editingBlog.content, filename: e.target.value }
                     })}
-                    className="w-full px-3 py-2 rounded"
-                    style={{ fontSize: '14px', border: '1px solid #e0e0e0', backgroundColor: '#fafafa', color: '#1a1a1a' }}
+                    className="w-full"
+                    style={{ padding: '10px 14px', fontSize: '14.5px', border: '1px solid #e4e4e7', backgroundColor: '#ffffff', color: '#1a1a1a', borderRadius: '8px', boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.06)', marginBottom: '0' }}
                     placeholder="{tag}.md"
                   />
-                  <p className="mt-1" style={{ fontSize: '11px', color: '#999999' }}>
+                  <p style={{ fontSize: '11px', color: '#999999', marginTop: '2px' }}>
                     Use {'{tag}'} as a placeholder for the tag name
                   </p>
                 </div>

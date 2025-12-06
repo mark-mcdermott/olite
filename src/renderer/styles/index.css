@@ -113,8 +113,7 @@ button:not([class*="bg-"]) {
 input[type="text"],
 input[type="password"],
 select {
-  background-color: var(--color-surface) !important;
-  color: var(--color-text) !important;
+  color: var(--color-text);
   border-color: var(--color-border);
 }
 

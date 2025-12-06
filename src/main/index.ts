@@ -1,6 +1,16 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, nativeImage } from 'electron';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+
+// Get the app icon path (works in both dev and production)
+const getIconPath = (): string => {
+  if (process.env.VITE_DEV_SERVER_URL) {
+    // Development: icon is in build folder at project root
+    return join(__dirname, '../../build/logo.png');
+  }
+  // Production: icon is bundled in resources
+  return join(process.resourcesPath, 'icon.icns');
+};
 import { registerVaultHandlers } from './ipc/vaultHandlers';
 import { registerTagHandlers, setTagManager } from './ipc/tagHandlers';
 import { registerPublishHandlers, initializePublishManagers, setPublishTagManager } from './ipc/publishHandlers';
@@ -14,10 +24,19 @@ const __dirname = dirname(__filename);
 let mainWindow: BrowserWindow | null = null;
 
 const createWindow = (): void => {
+  const iconPath = getIconPath();
+  const icon = nativeImage.createFromPath(iconPath);
+
+  // Set dock icon on macOS (before window creation)
+  if (process.platform === 'darwin' && app.dock) {
+    app.dock.setIcon(icon);
+  }
+
   // Create the browser window
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
+    icon: icon,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       contextIsolation: true,
@@ -49,6 +68,9 @@ registerTagHandlers();
 registerPublishHandlers();
 setTagManager(tagManager);
 setPublishTagManager(tagManager);
+
+// Set app name (shows in menu bar on macOS)
+app.setName('Xun');
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows
