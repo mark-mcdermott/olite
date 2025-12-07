@@ -1,60 +1,57 @@
-# Xun
+# Xun Notes
 
-> A lightweight desktop note-taking app for macOS, inspired by Obsidian.
+> A lightweight desktop app for note-taking and blog publishing, inspired by Obsidian.
 
-## What is Xun?
+## What is Xun Notes?
 
-Xun is a streamlined note-taking and journaling application designed for a specific workflow:
-- Daily notes with automatic date-based creation
-- Tag-based content organization (`#project-a`, `#personal`, etc.)
-- Auto-generated tag views that aggregate all content by tag
-- Integrated blog publishing to GitHub/Vercel
-- Clean, Obsidian-inspired UI with split panes and tabs
+A small Electron app that looks like Obsidian and has core note-taking functionality, without all the extra stuff Obsidian has. And it has a few nice extra features.
 
-This is a personal tool built for a single user, focusing on simplicity and maintainability.
+## Special Features
 
-## Features
+- A quick publish to blog post feature (for static site blogs with GitHub repos where the site is on Cloudflare Pages):
+  - Even if you mix everything into daily notes, you can still quickly make a blog post in the middle and publish just the post, without publishing the rest of the note.
+  - Can handle multiple blogs and let's you select which blog you want to publish each post to.
+  - Shows a nice progress bar and publish status so you know if the build is still running and if it succeeds or not.
+- A delete all content under a single tag feature
+  - You can mix all your work and personal notes into daily notes using tags to track of the different content types.l
+  - You can later easily delete all content from one tag. Handy if you ever leave your current job and need to quickly delete all work notes without losing any of your personal notes.
 
-### Core Features
+### Core Note Taking Features
+
 - Daily notes (auto-created with YYYY-MM-DD format)
-- Tag-based content sections (delimited by `---`)
-- Tag views (read-only aggregated content pages)
-- File tree sidebar with right-click context menus
+- Optional tag-based content blocks (opened by `#<topic>`, closed by `---`)
+- Tag views (both editable and read-only aggregated views of all content under a tag)
+- File tree sidebar
 - Markdown editor with live rendering
-- Split pane support for viewing multiple notes
+- Split pane support for editing and previewing markdown at the same time
 
-### Publishing System
-- Publish tagged content to multiple blog targets
-- GitHub integration for commits and deploys
-- Progress tracking for async publish operations
-- Support for Astro, Next.js, and other static sites on Vercel
+### Possible Future Features
 
-### Future Features
 - Custom emoji support
-- Content deletion by tag (for job separation)
+- More CMS feautres like list all posts and post edit/delete functionality
+- Smoother UX with micro-interaction focus
 
 ## Tech Stack
 
-- **Electron 33** - Desktop app framework
-- **React 18+** - UI library
-- **Vite 5** - Build tool and dev server
+- **Electron 39** - Desktop app framework
+- **React 19** - UI components and state management
+- **CodeMirror 6** - Markdown editor with live preview
+- **Vite 7** - Build tool and dev server
 - **TypeScript 5** - Type safety
-- **Tailwind CSS** - Styling
-- **Vitest** - Unit testing
+- **Tailwind CSS 4** - Utility-first styling (mixed with inline styles)
 - **Playwright** - E2E testing
 
 ## Project Structure
 
 ```
-xun/
+xun-notes/
 ├── src/
 │   ├── main/              # Electron main process
 │   ├── renderer/          # React UI
 │   └── preload/           # IPC bridge
 ├── tests/
-│   ├── unit/              # Unit tests
 │   └── e2e/               # E2E tests
-├── docs/llm/              # AI assistant context
+├── .llm/                  # AI assistant context
 └── dist/                  # Build output
 ```
 
@@ -79,13 +76,18 @@ npm run package
 
 ## AI Assistant Integration
 
-This project includes comprehensive LLM documentation in `docs/llm/` for AI coding assistants like Claude Code, GitHub Copilot, and Cursor.
+This project includes LLM documentation in `.llm/` for AI coding assistants like Claude Code, GitHub Copilot, and Cursor.
 
-Entry points:
+Entry points (symlinks):
+
 - `CLAUDE.md` - Claude Code
 - `AGENTS.md` - GitHub Copilot
 
 These files provide context about the project architecture, coding standards, and development workflows.
+
+## Dev Process
+
+I vibe coded this in Claude Code in about a week's worth of evenings/weekends, using the Playwright MPC server to have Claude check its own work. Then I went back and reviewed everything line by line and researched the parts I didn't understand.
 
 ## License
 
@@ -93,4 +95,4 @@ Private project - not open source.
 
 ## Status
 
-Currently in initial development phase. The first step is updating all LLM documentation to match this project.
+Currently in a beta release phase. I want the UX "micro-interactions" to be cleaner before proper release.
