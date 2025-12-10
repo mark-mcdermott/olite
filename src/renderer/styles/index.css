@@ -112,6 +112,9 @@
   /* Selection */
   --selection-bg: rgba(115, 115, 115, 0.3);
 
+  /* Editor cursor */
+  --editor-cursor: #737373;
+
   /* Scrollbar */
   --scrollbar-thumb: #e0e0e0;
   --scrollbar-thumb-hover: #999999;
@@ -247,6 +250,9 @@
     /* Selection */
     --selection-bg: rgba(139, 92, 246, 0.3);
 
+    /* Editor cursor */
+    --editor-cursor: #ffffff;
+
     /* Scrollbar */
     --scrollbar-thumb: #404040;
     --scrollbar-thumb-hover: #666666;
@@ -306,6 +312,22 @@ code {
 ::selection {
   background-color: var(--selection-bg);
   color: var(--text-primary);
+}
+
+/* CodeMirror cursor styling */
+.cm-cursor,
+.cm-cursor-primary,
+.cm-cursorLayer .cm-cursor {
+  border-left-color: var(--editor-cursor) !important;
+}
+
+/* CodeMirror content caret color */
+.cm-content {
+  caret-color: var(--editor-cursor) !important;
+}
+
+.cm-editor .cm-content {
+  caret-color: var(--editor-cursor) !important;
 }
 
 /* Focus ring styling - only for keyboard navigation */

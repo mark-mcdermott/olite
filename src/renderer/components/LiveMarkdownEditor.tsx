@@ -61,10 +61,12 @@ interface BlockquoteElement {
 
 function parseInlineElements(text: string, lineFrom: number): MarkdownElement[] {
   const elements: MarkdownElement[] = [];
+  let match;
+
+  // First, find all COMPLETE patterns (closed markers)
 
   // Bold: **text** (must check before italic)
   const boldRegex = /\*\*([^*]+)\*\*/g;
-  let match;
   while ((match = boldRegex.exec(text)) !== null) {
     elements.push({
       type: 'bold',
@@ -88,12 +90,10 @@ function parseInlineElements(text: string, lineFrom: number): MarkdownElement[] 
   }
 
   // Italic: *text* (single asterisk, but not inside bold)
-  // Need to be careful not to match bold markers
   const italicRegex = /(?<!\*)\*([^*]+)\*(?!\*)/g;
   while ((match = italicRegex.exec(text)) !== null) {
     const from = lineFrom + match.index;
     const to = lineFrom + match.index + match[0].length;
-    // Check if this overlaps with any bold element
     const overlapsWithBold = elements.some(el =>
       el.type === 'bold' && !(to <= el.from || from >= el.to)
     );
@@ -151,14 +151,14 @@ function parseInlineElements(text: string, lineFrom: number): MarkdownElement[] 
     const linkUrl = match[2];
     const fullFrom = lineFrom + match.index;
     const fullTo = lineFrom + match.index + match[0].length;
-    const textEnd = fullFrom + 1 + linkText.length; // after [text
+    const textEnd = fullFrom + 1 + linkText.length;
 
     elements.push({
       type: 'link',
       from: fullFrom,
       to: fullTo,
-      openMarker: { from: fullFrom, to: fullFrom + 1 }, // [
-      closeMarker: { from: textEnd, to: fullTo }, // ](url)
+      openMarker: { from: fullFrom, to: fullFrom + 1 },
+      closeMarker: { from: textEnd, to: fullTo },
       linkUrl
     });
   }
@@ -172,9 +172,91 @@ function parseInlineElements(text: string, lineFrom: number): MarkdownElement[] 
       type: 'tag',
       from: tagStart,
       to: tagEnd,
-      openMarker: { from: tagStart, to: tagStart }, // No marker to hide for tags
+      openMarker: { from: tagStart, to: tagStart },
       closeMarker: { from: tagEnd, to: tagEnd }
     });
+  }
+
+  // Now find UNCLOSED/OPEN patterns (like Obsidian behavior)
+  // These apply styling from the marker to end of line
+
+  // Unclosed bold: **text (no closing **)
+  const unclosedBoldRegex = /\*\*([^*]*)$/g;
+  while ((match = unclosedBoldRegex.exec(text)) !== null) {
+    const from = lineFrom + match.index;
+    const to = lineFrom + text.length;
+    // Check if this position is already covered by a closed bold
+    const alreadyCovered = elements.some(el =>
+      el.type === 'bold' && el.from <= from && el.to >= from
+    );
+    if (!alreadyCovered && match[1].length > 0) {
+      elements.push({
+        type: 'bold',
+        from,
+        to,
+        openMarker: { from, to: from + 2 },
+        closeMarker: { from: to, to } // No close marker
+      });
+    }
+  }
+
+  // Unclosed italic: *text (single *, no closing)
+  // Must not be part of **
+  const unclosedItalicRegex = /(?<!\*)\*(?!\*)([^*]*)$/g;
+  while ((match = unclosedItalicRegex.exec(text)) !== null) {
+    const from = lineFrom + match.index;
+    const to = lineFrom + text.length;
+    // Check if already covered by bold or italic
+    const alreadyCovered = elements.some(el =>
+      (el.type === 'bold' || el.type === 'italic') && el.from <= from && el.to >= from
+    );
+    if (!alreadyCovered && match[1].length > 0) {
+      elements.push({
+        type: 'italic',
+        from,
+        to,
+        openMarker: { from, to: from + 1 },
+        closeMarker: { from: to, to }
+      });
+    }
+  }
+
+  // Unclosed strikethrough: ~~text (no closing ~~)
+  const unclosedStrikeRegex = /~~([^~]*)$/g;
+  while ((match = unclosedStrikeRegex.exec(text)) !== null) {
+    const from = lineFrom + match.index;
+    const to = lineFrom + text.length;
+    const alreadyCovered = elements.some(el =>
+      el.type === 'strikethrough' && el.from <= from && el.to >= from
+    );
+    if (!alreadyCovered && match[1].length > 0) {
+      elements.push({
+        type: 'strikethrough',
+        from,
+        to,
+        openMarker: { from, to: from + 2 },
+        closeMarker: { from: to, to }
+      });
+    }
+  }
+
+  // Unclosed inline code: `text (no closing `)
+  const unclosedCodeRegex = /`([^`]*)$/g;
+  while ((match = unclosedCodeRegex.exec(text)) !== null) {
+    const from = lineFrom + match.index;
+    const to = lineFrom + text.length;
+    const alreadyCovered = elements.some(el =>
+      el.type === 'code' && el.from <= from && el.to >= from
+    );
+    if (!alreadyCovered && match[1].length > 0) {
+      elements.push({
+        type: 'code',
+        from,
+        to,
+        openMarker: { from, to: from + 1 },
+        closeMarker: { from: to, to }
+      });
+    }
   }
 
   return elements;
@@ -665,9 +747,15 @@ const editorTheme = EditorView.theme({
   '.cm-line': {
     padding: '2px 0'
   },
-  '.cm-cursor': {
-    borderLeftColor: '#737373',
-    borderLeftWidth: '2px'
+  '.cm-cursor, .cm-cursor-primary': {
+    borderLeftColor: 'var(--editor-cursor) !important',
+    borderLeftWidth: '2px !important'
+  },
+  '&.cm-focused .cm-cursor, &.cm-focused .cm-cursor-primary': {
+    borderLeftColor: 'var(--editor-cursor) !important'
+  },
+  '.cm-cursorLayer .cm-cursor': {
+    borderLeftColor: 'var(--editor-cursor) !important'
   },
   '.cm-selectionBackground': {
     backgroundColor: 'rgba(115, 115, 115, 0.3) !important'
